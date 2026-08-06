@@ -116,7 +116,7 @@ export const CompanyPatternDetails: React.FC = () => {
           <div className="bg-[#202225] border border-white/10 rounded-lg p-6 shadow-md flex flex-col gap-4">
             <h2 className="text-lg font-bold text-white font-heading mb-2">Pattern Section Breakdown</h2>
             <div className="grid grid-cols-1 gap-3">
-              {pattern.sections.map((sec) => (
+              {pattern.sections?.map((sec) => (
                 <div key={sec.num} className="bg-[#121113] border border-white/10 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h4 className="text-sm font-bold text-white font-heading">{sec.name}</h4>
@@ -135,11 +135,11 @@ export const CompanyPatternDetails: React.FC = () => {
           <div className="bg-[#202225] border border-white/10 rounded-lg p-6 shadow-md flex flex-col gap-4">
             <h2 className="text-lg font-bold text-white font-heading mb-2">Exam Syllabus & Topics</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {pattern.syllabus.map((cat, idx) => (
+              {pattern.syllabus?.map((cat, idx) => (
                 <div key={idx} className="bg-[#121113] border border-white/10 p-4 rounded-lg">
                   <h4 className="text-sm font-bold text-white font-heading mb-2">{cat.title}</h4>
                   <div className="flex flex-wrap gap-1.5">
-                    {cat.topics.map((t, tIdx) => (
+                    {cat.topics?.map((t, tIdx) => (
                       <span key={tIdx} className="text-xs font-sans text-gray-300 bg-white/5 border border-white/10 px-2 py-0.5 rounded">
                         {t.name}
                       </span>
@@ -155,7 +155,7 @@ export const CompanyPatternDetails: React.FC = () => {
           <div className="bg-[#202225] border border-white/10 rounded-lg p-6 shadow-md flex flex-col gap-4">
             <h2 className="text-lg font-bold text-white font-heading mb-2">Selection Rounds & Process</h2>
             <div className="flex flex-col gap-3">
-              {pattern.recruitmentStages.map((stage) => (
+              {pattern.recruitmentStages?.map((stage) => (
                 <div key={stage.step} className="bg-[#121113] border border-white/10 p-4 rounded-lg flex items-start gap-4">
                   <div className="w-8 h-8 rounded-lg bg-[#202225] border border-white/10 flex items-center justify-center shrink-0 text-xs font-mono font-bold text-white">
                     {stage.step}
@@ -174,7 +174,7 @@ export const CompanyPatternDetails: React.FC = () => {
           <div className="bg-[#202225] border border-white/10 rounded-lg p-6 shadow-md flex flex-col gap-4">
             <h2 className="text-lg font-bold text-white font-heading mb-2">Preparation Strategy & Tips</h2>
             <div className="flex flex-col gap-3">
-              {pattern.prepStrategy.map((strat, idx) => (
+              {pattern.prepStrategy?.map((strat, idx) => (
                 <div key={idx} className="bg-[#121113] border border-white/10 p-4 rounded-lg">
                   <h4 className="text-sm font-bold text-white font-heading mb-1">{strat.title}</h4>
                   <p className="text-xs text-gray-400 font-sans leading-relaxed">{strat.description}</p>
