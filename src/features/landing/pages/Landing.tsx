@@ -120,59 +120,66 @@ export const Landing: React.FC = () => {
       {/* 1. Header Navbar */}
       <NeetCodeNavbar user={user} onLogout={handleLogout} />
       
-      {/* 2. HERO SECTION - Exact Alignment & Spacing Layout */}
-      <section id="companiesshero" className="w-full relative">
-        <div className="mx-auto max-w-3xl px-5 pb-6 pt-7 text-center sm:pb-8 sm:pt-10 flex flex-col items-center">
-          <h1 className="hero-font mx-auto max-w-[15ch] text-[34px] font-extrabold leading-[1.02] tracking-[-.02em] text-white sm:text-[58px] sm:leading-[1] lg:text-[68px] font-heading">
-            <span className="block min-h-[1.12em] text-[#A3E635] font-black drop-shadow-[0_0_24px_rgba(163,230,53,0.35)] overflow-hidden">
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={heroWords[heroWordIndex]}
-                  initial={{ y: 32, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -32, opacity: 0 }}
-                  transition={{ duration: 0.35, ease: 'easeInOut' }}
-                  className="inline-block min-w-[5ch]"
-                >
-                  {heroWords[heroWordIndex]}
-                </motion.span>
-              </AnimatePresence>
-            </span>
-            <span className="block">your campus <span className="text-[#A3E635]">placement.</span></span>
-          </h1>
+      {/* 2. HERO FOLD WRAPPER - Restored Previous Centered Design */}
+      <div className="w-full flex flex-col justify-between min-h-[calc(100vh-90px)] pb-6 pt-2">
+        
+        {/* CENTERED HERO CONTENT */}
+        <section id="companiesshero" className="w-full relative my-auto py-4 sm:py-6">
+          <div className="mx-auto max-w-3xl px-5 text-center flex flex-col items-center">
+            
+            <h1 className="hero-font mx-auto max-w-[15ch] text-[34px] font-extrabold leading-[1.02] tracking-[-.02em] text-white sm:text-[58px] sm:leading-[1] lg:text-[68px] font-heading">
+              <span className="block min-h-[1.12em] text-[#A3E635] font-black overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={heroWords[heroWordIndex]}
+                    initial={{ y: 32, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -32, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: 'easeInOut' }}
+                    className="inline-block min-w-[5ch]"
+                  >
+                    {heroWords[heroWordIndex]}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+              <span className="block">your campus <span className="text-[#A3E635]">placement.</span></span>
+            </h1>
 
-          <p className="hero-font mx-auto mt-4 max-w-[48ch] text-[14px] font-normal leading-[1.55] text-gray-400 sm:text-[18px] sm:leading-[1.7] font-sans">
-            Prepare for campus drives and walk-in drives with topic-wise lessons, coding practice, company-pattern mocks, and a clear weak-area fix plan.
-          </p>
+            <p className="hero-font mx-auto mt-4 max-w-[48ch] text-[14px] font-normal leading-[1.55] text-gray-400 sm:text-[18px] sm:leading-[1.7] font-sans">
+              Prepare for campus drives and walk-in drives with topic-wise lessons, coding practice, company-pattern mocks, and a clear weak-area fix plan.
+            </p>
 
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:mt-7 w-full sm:w-auto">
-            <Link
-              to="/company-patterns"
-              className="inline-flex min-h-[56px] w-full sm:w-auto items-center justify-center gap-2 rounded-[14px] bg-[#A3E635] hover:bg-[#84CC16] px-8 text-[16px] font-black text-black shadow-[0_7px_0_#65A30D] active:translate-y-1 transition-all cursor-pointer font-sans"
-            >
-              <span>Explore company patterns</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right" aria-hidden="true">
-                <path d="M5 12h14"></path>
-                <path d="m12 5 7 7-7 7"></path>
-              </svg>
-            </Link>
+            {/* CTA Buttons */}
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:mt-7 w-full sm:w-auto">
+              <Link
+                to="/company-patterns"
+                className="inline-flex min-h-[56px] w-full sm:w-auto items-center justify-center gap-2 rounded-[14px] bg-[#A3E635] hover:bg-[#84CC16] px-8 text-[16px] font-black text-black shadow-[0_7px_0_#65A30D] active:translate-y-1 transition-all cursor-pointer font-sans"
+              >
+                <span>Explore company patterns</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right" aria-hidden="true">
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path>
+                </svg>
+              </Link>
 
-            <button
-              type="button"
-              onClick={() => dispatch(openAuthModal({ mode: 'signup' }))}
-              className="inline-flex min-h-[56px] w-full sm:w-auto items-center justify-center gap-2 rounded-[14px] bg-[#121316] border border-white/15 hover:border-white/30 px-8 text-[16px] font-black text-white shadow-[0_7px_0_#000] active:translate-y-1 transition-all cursor-pointer font-sans"
-            >
-              <span>Sign up</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right" aria-hidden="true">
-                <path d="M5 12h14"></path>
-                <path d="m12 5 7 7-7 7"></path>
-              </svg>
-            </button>
+              <button
+                type="button"
+                onClick={() => dispatch(openAuthModal({ mode: 'signup' }))}
+                className="inline-flex min-h-[56px] w-full sm:w-auto items-center justify-center gap-2 rounded-[14px] bg-[#121316] border border-white/15 hover:border-white/30 px-8 text-[16px] font-black text-white shadow-[0_7px_0_#000] active:translate-y-1 transition-all cursor-pointer font-sans"
+              >
+                <span>Sign up</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right" aria-hidden="true">
+                  <path d="M5 12h14"></path>
+                  <path d="m12 5 7 7-7 7"></path>
+                </svg>
+              </button>
+            </div>
+
           </div>
-        </div>
+        </section>
 
-        {/* Continuous Company Logo Marquee Scroller - Centered Middle Alignment */}
-        <div className="w-full max-w-5xl px-4 pb-4 pt-6 mx-auto flex items-center justify-center">
+        {/* Continuous Company Logo Marquee Scroller */}
+        <div className="w-full max-w-5xl px-4 pt-2 pb-2 mx-auto flex items-center justify-center">
           <div className="relative w-full max-w-full overflow-hidden rounded-xl border border-white/10 bg-[#121316] py-3.5 shadow-md [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
             <div className="myjo-company-chip-marquee flex w-max items-center justify-center gap-5 px-4">
               {/* Set 1 */}
@@ -205,10 +212,11 @@ export const Landing: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+
+      </div>
 
       {/* 3. SECTION 2: "Pick your placement path." (id="paths") */}
-      <section id="paths" className="scroll-mt-24 bg-[#090A0C] w-full pt-12 pb-8">
+      <section id="paths" className="scroll-mt-24 bg-[#090A0C] w-full pt-20 sm:pt-32 pb-12">
         <div className="mx-auto max-w-6xl px-4">
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight font-heading">

@@ -202,7 +202,14 @@ export const Login: React.FC<AuthPageProps> = ({ defaultMode, onCloseModal }) =>
     if (loginUser.fulfilled.match(result)) {
       toast.success('Welcome back to Connect 2 Code!');
       handleClose();
-      navigate('/practice');
+      const fromPath = (location.state as any)?.from?.pathname;
+      if (location.pathname === '/login' || location.pathname === '/signup') {
+        if (fromPath && fromPath !== '/login' && fromPath !== '/signup') {
+          navigate(fromPath);
+        } else {
+          navigate('/');
+        }
+      }
     } else {
       toast.error((result.payload as string) || 'Authentication failed');
     }
@@ -218,7 +225,14 @@ export const Login: React.FC<AuthPageProps> = ({ defaultMode, onCloseModal }) =>
     if (registerUser.fulfilled.match(result)) {
       toast.success('Account created successfully!');
       handleClose();
-      navigate('/practice');
+      const fromPath = (location.state as any)?.from?.pathname;
+      if (location.pathname === '/login' || location.pathname === '/signup') {
+        if (fromPath && fromPath !== '/login' && fromPath !== '/signup') {
+          navigate(fromPath);
+        } else {
+          navigate('/');
+        }
+      }
     } else {
       toast.error((result.payload as string) || 'Registration failed');
     }
@@ -234,7 +248,14 @@ export const Login: React.FC<AuthPageProps> = ({ defaultMode, onCloseModal }) =>
     ).then((res) => {
       if (loginUser.fulfilled.match(res)) {
         handleClose();
-        navigate('/practice');
+        const fromPath = (location.state as any)?.from?.pathname;
+      if (location.pathname === '/login' || location.pathname === '/signup') {
+        if (fromPath && fromPath !== '/login' && fromPath !== '/signup') {
+          navigate(fromPath);
+        } else {
+          navigate('/');
+        }
+      }
       }
     });
   };
@@ -250,7 +271,7 @@ export const Login: React.FC<AuthPageProps> = ({ defaultMode, onCloseModal }) =>
     <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in font-sans">
       
       {/* Floating Card Container */}
-      <div className="relative w-full max-w-md bg-[#121316] border border-white/15 rounded-2xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] p-6 sm:p-8 text-white my-auto animate-scale-up">
+      <div className="relative w-full max-w-md w-full bg-[#121316] border border-white/15 rounded-2xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] p-5 sm:p-8 text-white my-auto max-h-[90vh] overflow-y-auto animate-scale-up">
         
         {/* Floating Modal Close Button (X) */}
         <button

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { fetchCompanyBySlug, fetchCompanyProblems } from '../redux/companySlice';
 import { Skeleton } from '../../../shared/components/ui/Skeleton';
@@ -22,6 +22,8 @@ export const CompanyDetails: React.FC = () => {
   const { selectedCompany: company, companyProblems, loading } = useAppSelector((state) => state.companies);
   const { bookmarks } = useAppSelector((state) => state.bookmarks);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const location = useLocation();
+  const fromPatterns = (location.state as any)?.from === 'company-patterns';
 
   useEffect(() => {
     if (slug) {
@@ -83,11 +85,11 @@ export const CompanyDetails: React.FC = () => {
       {/* 1. BACK BUTTON */}
       <div>
         <Link
-          to="/companies"
+          to={fromPatterns ? "/company-patterns" : "/companies"}
           className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-300 hover:text-[#A3E635] transition-all bg-[#202225] border border-white/10 hover:border-[#A3E635]/40 px-4.5 py-2.5 rounded-xl shadow-md group"
         >
           <i className="fa-solid fa-arrow-left text-xs text-[#A3E635] group-hover:-translate-x-1 transition-transform"></i>
-          <span>Back to Companies</span>
+          <span>{fromPatterns ? "Back to Exam Patterns" : "Back to Companies"}</span>
         </Link>
       </div>
 
@@ -115,7 +117,7 @@ export const CompanyDetails: React.FC = () => {
           </div>
 
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white font-heading tracking-tight mb-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white font-heading tracking-tight break-words mb-1">
               {company.name} <span className="text-[#A3E635]">Placement Guide</span>
             </h1>
             <p className="text-xs sm:text-sm text-gray-400 font-sans flex flex-wrap items-center gap-2">
