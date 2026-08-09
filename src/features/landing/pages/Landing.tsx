@@ -142,7 +142,7 @@ export const Landing: React.FC = () => {
                   </motion.span>
                 </AnimatePresence>
               </span>
-              <span className="block">your campus <span className="text-[#A3E635]">placement.</span></span>
+              <span className="block hero-campus-placement-text text-white">your campus <span className="hero-placement-word">placement.</span></span>
             </h1>
 
             <p className="hero-font mx-auto mt-4 max-w-[48ch] text-[14px] font-normal leading-[1.55] text-gray-400 sm:text-[18px] sm:leading-[1.7] font-sans">

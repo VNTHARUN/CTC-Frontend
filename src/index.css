@@ -268,4 +268,247 @@ code, pre, .font-mono {
   animation-play-state: paused;
 }
 
+/* LIGHT MODE COMPREHENSIVE OVERRIDES */
+html.light {
+  --background: #f8fafc;
+  --theme-color: #f8fafc;
+  --foreground: #0f172a;
+  --foreground-secondary: #334155;
+  --card: #ffffff;
+  --card-background: #ffffff;
+  --card-background-hover: #f1f5f9;
+  --card-border-color: #e2e8f0;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --border-color: #e2e8f0;
+  --input: #ffffff;
+  color-scheme: light;
+}
 
+html.light body,
+html.light #root {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* 1. MAIN CONTAINERS & CARDS OVERRIDES */
+html.light .bg-\[\#090A0C\],
+html.light .bg-\[\#0d0e10\],
+html.light .bg-\[\#121113\],
+html.light .bg-\[\#121316\] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* 2. INLINE TABLES, EXPANDED MODULE CONTAINERS & CARDS */
+html.light .bg-\[\#17191c\],
+html.light .bg-\[\#18191c\],
+html.light .bg-\[\#1a1c20\] {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* 3. INNER ITEM CARDS, ROWS & PROBLEM CARDS */
+html.light .bg-\[\#202225\],
+html.light .bg-\[\#2f3136\] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .bg-\[\#202225\]:hover,
+html.light .bg-\[\#2f3136\]:hover {
+  background-color: #f1f5f9 !important;
+}
+
+/* 4. CHIPS, BADGES, SMALL BOXES & PILLS */
+html.light .bg-white\/5,
+html.light .bg-white\/10 {
+  background-color: #f1f5f9 !important;
+  color: #1e293b !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* 5. BORDER OVERRIDES */
+html.light .border-white\/5,
+html.light .border-white\/10,
+html.light .border-white\/15,
+html.light .border-white\/20,
+html.light .border-white\/30,
+html.light .border-white\/40 {
+  border-color: #e2e8f0 !important;
+}
+
+/* 6. TEXT COLOR OVERRIDES */
+html.light .text-white,
+html.light .text-gray-100,
+html.light .text-gray-200,
+html.light .text-gray-300 {
+  color: #0f172a !important;
+}
+
+html.light .text-gray-400,
+html.light .text-gray-500 {
+  color: #475569 !important;
+}
+
+/* 7. LIME BRAND TEXT CONTRAST IN LIGHT MODE */
+html.light .text-\[\#A3E635\] {
+  color: #A3E635 !important;
+}
+
+/* 8. HEADER & NAVIGATION OVERRIDES */
+html.light header {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light nav a:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* 9. FORM INPUTS & SELECTS */
+html.light input,
+html.light select,
+html.light textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light input::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* 10. CODE BLOCKS & PRE CONTAINERS */
+html.light pre,
+html.light code,
+html.light .codeblock-container {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* 11. BUTTONS IN LIGHT MODE */
+html.light .bg-\[\#A3E635\] {
+  background-color: #A3E635 !important;
+  color: #000000 !important;
+}
+
+html.light .bg-\[\#A3E635\]:hover {
+  background-color: #A3E635 !important;
+  color: #ffffff !important;
+}
+
+/* 12. SCROLLBARS IN LIGHT MODE */
+html.light ::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 13. FIX GRADIENT TEXT & TRANSPARENT HEADINGS IN LIGHT MODE */
+html.light .text-transparent,
+html.light [class*="bg-clip-text"] {
+  background-image: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html.light .text-transparent .text-\[\#A3E635\],
+html.light [class*="bg-clip-text"] .text-\[\#A3E635\],
+html.light .text-\[\#A3E635\] {
+  color: #70B615 !important;
+  -webkit-text-fill-color: #70B615 !important;
+}
+
+/* 11. BUTTONS & LIME HIGHLIGHTS IN LIGHT MODE - EXACT USER SPEC */
+html.light .bg-\[\#A3E635\] {
+  background-color: #A3E635 !important;
+  color: #000000 !important;
+}
+
+html.light .bg-\[\#A3E635\]:hover {
+  background-color: #A3E635 !important;
+  color: #000000 !important;
+}
+
+html.light .shadow-\[0_7px_0_\#65A30D\],
+html.light .shadow-\[0_5px_0_\#65A30D\] {
+  box-shadow: 0 5px 0 #65A30D !important;
+}
+
+html.light .text-\[\#A3E635\] {
+  color: #70B615 !important;
+  -webkit-text-fill-color: #70B615 !important;
+}
+
+/* 14. MOBILE SPECIFIC LIGHT MODE OVERRIDES */
+html.light .lg\:hidden.bg-\[\#090A0C\]\/98,
+html.light .lg\:hidden.border-t {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html.light .hero-font span.block:not(.text-\[\#A3E635\]) {
+  color: #000000 !important;
+}
+
+html.light .hero-font p {
+  color: #334155 !important;
+}
+
+/* 15. EXPLICIT ALL BLACK FOR 'your campus placement.' IN LIGHT MODE */
+html.light .hero-campus-placement-text,
+html.light .hero-campus-placement-text *,
+html.light .hero-campus-placement-text span,
+html.light .hero-campus-placement-text .text-\[\#A3E635\] {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* STRICT BRAND LIME #A3E635 ONLY IN LIGHT MODE */
+html.light .text-\[\#A3E635\],
+html.light span.text-\[\#A3E635\],
+html.light .hero-font .text-\[\#A3E635\] {
+  color: #A3E635 !important;
+  -webkit-text-fill-color: #A3E635 !important;
+}
+
+html.light .bg-\[\#A3E635\] {
+  background-color: #A3E635 !important;
+}
+
+/* FORCE BOTH 'your campus' AND 'placement.' TO SOLID BLACK (#000000) IN LIGHT MODE */
+html.light .hero-campus-placement-text,
+html.light .hero-placement-word,
+html.light span.hero-placement-word {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* HERO PLACEMENT WORD COLOR RULES FOR DARK VS LIGHT MODE */
+.hero-placement-word {
+  color: #A3E635;
+}
+
+html.light .hero-placement-word,
+html.light .hero-campus-placement-text {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}

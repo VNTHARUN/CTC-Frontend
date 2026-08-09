@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { logoutUser, openAuthModal } from '../../../features/auth/redux/authSlice';
+import { useTheme } from '../../context/ThemeContext';
 
 export interface NeetCodeNavbarProps {
   user?: any;
@@ -19,6 +20,7 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { isAuthenticated, user: reduxUser } = useAppSelector((state) => state.auth);
+  const { theme, toggleTheme } = useTheme();
 
   const isLoggedIn = user !== undefined ? user !== null : (isAuthenticated && reduxUser !== null);
   const currentUser = user || reduxUser || {
@@ -185,6 +187,20 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
               </button>
             )}
 
+            {/* THEME TOGGLE BUTTON - Placed to the RIGHT of Profile/Signup */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-lg bg-[#090A0C] border border-white/15 hover:border-[#A3E635]/50 text-gray-300 hover:text-white transition-all focus:outline-none cursor-pointer shrink-0 shadow-sm"
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+              aria-label="Toggle theme"
+            >
+              <i className={`fa-solid ${theme === 'dark' ? 'fa-sun text-amber-400' : 'fa-moon text-indigo-400'} text-xs`}></i>
+              <span className="text-xs font-bold text-gray-300">
+                {theme === 'dark' ? 'Light' : 'Dark'}
+              </span>
+            </button>
+
             {/* HAMBURGER TOGGLE BUTTON FOR MOBILE (< lg screens) */}
             <button
               type="button"
@@ -201,7 +217,7 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
 
       {/* SLEEK MOBILE NAVIGATION PANEL (Visible when mobile menu is toggled) */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-t border-white/10 bg-[#090A0C]/98 backdrop-blur-xl px-4 py-3 shadow-2xl animate-fade-in font-sans">
+        <div className="lg:hidden border-t border-white/10 light:border-gray-200 bg-[#090A0C]/98 light:bg-white/98 backdrop-blur-xl px-4 py-3 shadow-2xl animate-fade-in font-sans">
           <nav className="flex flex-col gap-1">
             {navItems.map((item) => (
               <NavLink

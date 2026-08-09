@@ -4,10 +4,12 @@ import { Provider } from 'react-redux';
 import { store } from './app/store';
 import { router } from './routes/appRoutes';
 import { Toaster } from 'react-hot-toast';
+import { ThemeProvider } from './shared/context/ThemeContext';
 
 export const App: React.FC = () => {
   return (
     <Provider store={store}>
+      <ThemeProvider>
       <Toaster
         position="top-right"
         toastOptions={{
@@ -33,6 +35,7 @@ export const App: React.FC = () => {
         }}
       />
       <RouterProvider router={router} />
+      </ThemeProvider>
     </Provider>
   );
 };
