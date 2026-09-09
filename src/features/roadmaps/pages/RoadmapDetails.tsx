@@ -5,25 +5,41 @@ export interface JourneyNode {
   id: string;
   title: string;
   color?: string;
+  bgColor?: string;
+  borderColor?: string;
   icon?: string;
   tags: string[];
   description: string;
   whyImportant?: string[];
+  realProjects?: string[];
+  resources?: { name: string; type: string; url: string }[];
   problems?: { title: string; difficulty: 'Easy' | 'Medium' | 'Hard'; slug: string }[];
 }
 
 export interface PhaseData {
+  phaseNum?: number;
   title: string;
   color?: string;
   topics: string[];
 }
 
+export interface RoadmapFaq {
+  q?: string;
+  a?: string;
+  question?: string;
+  answer?: string;
+  bullets?: string[];
+}
+
 export interface RoadmapData {
   title: string;
   subtitle: string;
+  shortExplanation?: string;
+  whatThisRoleDoes?: string[];
+  skillsRequired?: { category: string; items: string[] }[];
   phases: PhaseData[];
   journeyNodes: JourneyNode[];
-  faqs: { q: string; a: string }[];
+  faqs: RoadmapFaq[];
 }
 
 const getRoadmapData = (slug: string | undefined): RoadmapData => {
@@ -403,7 +419,7 @@ export const RoadmapDetails: React.FC = () => {
 
         {/* DSA Sheet Gradient Line */}
         <div className="flex justify-center mb-9">
-          <div className="shrink-0 h-0.5 rounded-full w-60 bg-gradient-to-r from-[#A3E635] via-[#38BDF8] to-[#C084FC]"></div>
+          <div className="shrink-0 h-0.5 rounded-full w-60 bg-linear-to-r from-[#A3E635] via-[#38BDF8] to-[#C084FC]"></div>
         </div>
 
         {/* HERO DIAGRAM CONTAINER */}
@@ -417,7 +433,7 @@ export const RoadmapDetails: React.FC = () => {
           </div>
 
           <div
-            className="w-0.5 h-8 bg-gradient-to-b from-[#A3E635]/60 to-[#A3E635]/10"
+            className="w-0.5 h-8 bg-linear-to-b from-[#A3E635]/60 to-[#A3E635]/10"
           ></div>
 
           {/* Grid of Columns for Phases - DSA SHEET STYLING */}
@@ -426,7 +442,7 @@ export const RoadmapDetails: React.FC = () => {
               
               {/* Multi-Color Gradient Connection Line */}
               <div
-                className="hidden sm:block absolute rounded-full top-0 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-[#A3E635] via-[#38BDF8] via-[#818CF8] via-[#C084FC] to-[#F97316] shadow-[0_0_12px_rgba(163,230,53,0.2)]"
+                className="hidden sm:block absolute rounded-full top-0 left-[10%] right-[10%] h-0.5 bg-linear-to-r from-[#A3E635] via-[#818CF8] to-[#F97316] shadow-[0_0_12px_rgba(163,230,53,0.2)]"
               ></div>
 
               {/* Watermark Tag */}
@@ -488,7 +504,7 @@ export const RoadmapDetails: React.FC = () => {
             </div>
 
             {/* Bottom CTA Pill - LIME ACCENT */}
-            <div className="w-0.5 h-7 mx-auto mt-2 bg-gradient-to-b from-[#F97316]/30 to-[#A3E635]/60"></div>
+            <div className="w-0.5 h-7 mx-auto mt-2 bg-linear-to-b from-[#F97316]/30 to-[#A3E635]/60"></div>
 
             <div className="flex flex-col items-center">
               <div

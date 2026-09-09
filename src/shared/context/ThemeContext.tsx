@@ -1,3 +1,4 @@
+/* oxlint-disable react/only-export-components -- provider and its hook form one public context API */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type Theme = 'dark' | 'light';

@@ -6,15 +6,19 @@ import { closeAuthModal, openAuthModal, logoutUser } from '../../auth/redux/auth
 import { Login } from '../../auth/pages/Login';
 import { NeetCodeNavbar } from '../../../shared/components/ui/NeetCodeNavbar';
 import { Footer } from '../../../shared/components/ui/Footer';
-import { toast } from 'react-hot-toast';
+import { toastAuthFeedback, toAuthFeedback } from '../../auth/utils/authToasts';
 
 export const Landing: React.FC = () => {
   const dispatch = useAppDispatch();
   const { isAuthModalOpen, user } = useAppSelector((state) => state.auth);
 
   const handleLogout = async () => {
-    await dispatch(logoutUser());
-    toast.success('Logged out successfully');
+    const res = await dispatch(logoutUser());
+    if (logoutUser.fulfilled.match(res)) {
+      toastAuthFeedback({ message: res.payload.message, errors: null }, 'success');
+    } else {
+      toastAuthFeedback(toAuthFeedback(res.payload), 'error');
+    }
   };
 
   // 1. Hero Word Flipping State ('Clear', 'Crack', 'Master', 'Ace')
@@ -23,7 +27,7 @@ export const Landing: React.FC = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setHeroWordIndex((prev) => (prev + 1) % heroWords.length);
+      setHeroWordIndex((prev) => (prev + 1) % 4);
     }, 2500);
     return () => clearInterval(interval);
   }, []);
@@ -116,7 +120,7 @@ export const Landing: React.FC = () => {
   ];
 
   return (
-    <div className="w-full flex flex-col items-center bg-[#090A0C] text-[#f4f4f4] font-sans selection:bg-[#A3E635]/30 selection:text-white overflow-x-hidden min-h-screen">
+    <div className="c2c-has-bottom-nav w-full flex flex-col bg-(--c2c-bg) text-(--c2c-text) font-sans selection:bg-[#A3E635]/30 selection:text-white overflow-x-hidden min-h-screen">
       {/* 1. Header Navbar */}
       <NeetCodeNavbar user={user} onLogout={handleLogout} />
       
@@ -125,9 +129,10 @@ export const Landing: React.FC = () => {
         
         {/* CENTERED HERO CONTENT */}
         <section id="companiesshero" className="w-full relative my-auto py-4 sm:py-6">
-          <div className="mx-auto max-w-3xl px-5 text-center flex flex-col items-center">
+          <div className="c2c-container text-center flex flex-col items-center">
             
-            <h1 className="hero-font mx-auto max-w-[15ch] text-[34px] font-extrabold leading-[1.02] tracking-[-.02em] text-white sm:text-[58px] sm:leading-[1] lg:text-[68px] font-heading">
+            <p className="c2c-eyebrow mb-4">Placement preparation, simplified</p>
+            <h1 className="hero-font mx-auto max-w-[15ch] text-[38px] font-extrabold leading-[1.02] tracking-[-.035em] text-white sm:text-[58px] sm:leading- lg:text-[72px] font-heading">
               <span className="block min-h-[1.12em] text-[#A3E635] font-black overflow-hidden">
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -153,7 +158,7 @@ export const Landing: React.FC = () => {
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:mt-7 w-full sm:w-auto">
               <Link
                 to="/company-patterns"
-                className="inline-flex min-h-[56px] w-full sm:w-auto items-center justify-center gap-2 rounded-[14px] bg-[#A3E635] hover:bg-[#84CC16] px-8 text-[16px] font-black text-black shadow-[0_7px_0_#65A30D] active:translate-y-1 transition-all cursor-pointer font-sans"
+                className="inline-flex min-h-14 w-full sm:w-auto items-center justify-center gap-2 rounded-[14px] bg-[#A3E635] hover:bg-[#84CC16] px-8 text-[16px] font-black text-black shadow-[0_7px_0_#65A30D] active:translate-y-1 transition-all cursor-pointer font-sans"
               >
                 <span>Explore company patterns</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right" aria-hidden="true">
@@ -165,7 +170,7 @@ export const Landing: React.FC = () => {
               <button
                 type="button"
                 onClick={() => dispatch(openAuthModal({ mode: 'signup' }))}
-                className="inline-flex min-h-[56px] w-full sm:w-auto items-center justify-center gap-2 rounded-[14px] bg-[#121316] border border-white/15 hover:border-white/30 px-8 text-[16px] font-black text-white shadow-[0_7px_0_#000] active:translate-y-1 transition-all cursor-pointer font-sans"
+                className="inline-flex min-h- w-full sm:w-auto items-center justify-center gap-2 rounded-[14px] bg-[#121316] border border-white/15 hover:border-white/30 px-8 text-[16px] font-black text-white shadow-[0_7px_0_#000] active:translate-y-1 transition-all cursor-pointer font-sans"
               >
                 <span>Sign up</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right" aria-hidden="true">
@@ -179,8 +184,8 @@ export const Landing: React.FC = () => {
         </section>
 
         {/* Continuous Company Logo Marquee Scroller */}
-        <div className="w-full max-w-5xl px-4 pt-2 pb-2 mx-auto flex items-center justify-center">
-          <div className="relative w-full max-w-full overflow-hidden rounded-xl border border-white/10 bg-[#121316] py-3.5 shadow-md [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
+        <div className="c2c-container pt-2 pb-2 flex items-center justify-center">
+          <div className="relative w-full max-w-full overflow-hidden rounded-xl border border-white/10 bg-[#121316] py-3.5 shadow-md mask-[linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
             <div className="myjo-company-chip-marquee flex w-max items-center justify-center gap-5 px-4">
               {/* Set 1 */}
               {companyLogos.map((logo, idx) => (
@@ -200,6 +205,7 @@ export const Landing: React.FC = () => {
               {companyLogos.map((logo, idx) => (
                 <div
                   key={`logo-set2-${idx}`}
+                  aria-hidden="true"
                   className="inline-flex h-12 min-w-[120px] items-center justify-center rounded-xl bg-white border border-white/20 px-4 py-2 hover:border-[#A3E635] hover:shadow-[0_0_14px_rgba(163,230,53,0.4)] transition-all shrink-0 shadow-sm"
                 >
                   <img
@@ -217,7 +223,7 @@ export const Landing: React.FC = () => {
 
       {/* 3. SECTION 2: "Pick your placement path." (id="paths") */}
       <section id="paths" className="scroll-mt-24 bg-[#090A0C] w-full pt-20 sm:pt-32 pb-12">
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="c2c-container">
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight font-heading">
               Pick your <span className="text-[#A3E635]">placement path</span>.
@@ -232,7 +238,7 @@ export const Landing: React.FC = () => {
             <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pb-3">
               {placementPaths.map((path) => (
                 <div key={path.id} className="w-[min(84vw,320px)] shrink-0 snap-center">
-                  <div className="flex flex-col overflow-hidden rounded-xl border border-white/10 hover:border-white/30 bg-[#121316] shadow-md p-5">
+                  <div className="c2c-card c2c-card-interactive flex flex-col overflow-hidden p-5">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-10 h-10 rounded-lg bg-[#090A0C] border border-white/10 flex items-center justify-center shrink-0">
                         <i className={`${path.iconClass} text-base`}></i>
@@ -274,7 +280,7 @@ export const Landing: React.FC = () => {
           {/* Desktop Grid Layout */}
           <div className="hidden gap-4 lg:grid lg:grid-cols-4">
             {placementPaths.map((path) => (
-              <div key={path.id} className="flex flex-col justify-between rounded-xl border border-white/10 hover:border-white/30 bg-[#121316] hover:bg-[#1a1c21] p-5 shadow-md transition-all group">
+              <div key={path.id} className="c2c-card c2c-card-interactive flex flex-col justify-between p-5 group">
                 <div>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 rounded-lg bg-[#090A0C] border border-white/10 flex items-center justify-center shrink-0">
@@ -314,7 +320,7 @@ export const Landing: React.FC = () => {
           </div>
 
           {/* Bottom 4 Feature Value Props Grid */}
-          <div className="mt-8 grid gap-3.5 rounded-xl border border-white/10 bg-[#121316] p-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="c2c-card mt-8 grid gap-3.5 p-5 sm:grid-cols-2 lg:grid-cols-4">
             <div className="flex items-center gap-3 p-2">
               <div className="w-10 h-10 rounded-lg bg-[#090A0C] border border-white/10 flex items-center justify-center shrink-0">
                 <i className="fa-solid fa-compass text-[#A3E635] text-sm"></i>
@@ -358,9 +364,9 @@ export const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. SECTION 3: "WHY Connect 2 Code IS DIFFERENT?" BENTO GRID SECTION (Exact Requested Alignment & Spacing) */}
+      {/* 4. SECTION 3: "WHY Connect 2 Code IS DIFFERENT?" BENTO GRID SECTION */}
       <section className="bg-[#090A0C] w-full pt-10 pb-16 border-t border-white/10">
-        <div className="relative max-w-7xl px-6 pt-5 pb-10 mx-auto md:px-12 lg:px-24">
+        <div className="c2c-container relative pt-5 pb-10">
           <div className="flex flex-col w-full items-center justify-center text-center">
             <h2 className="text-xs font-bold uppercase tracking-widest text-[#A3E635] mb-2 font-mono">
               Real Skills, Real Outcomes
@@ -454,9 +460,9 @@ export const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. SECTION 4: "Students understand what to fix next." TESTIMONIALS (id="stories") */}
+      {/* 5. SECTION 4: "Students understand what to fix next." TESTIMONIALS */}
       <section className="scroll-mt-24 bg-[#090A0C] w-full py-12 md:py-16 border-t border-white/10" id="stories">
-        <div className="mx-auto max-w-6xl px-4 text-center">
+        <div className="c2c-container text-center">
           <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight font-heading mb-2">
             Students understand <span className="text-[#A3E635]">what to fix next.</span>
           </h2>
@@ -465,7 +471,7 @@ export const Landing: React.FC = () => {
           </p>
 
           {/* Continuous Infinite Testimonials Marquee */}
-          <div className="relative overflow-hidden rounded-2xl py-2 [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
+          <div className="relative overflow-hidden rounded-2xl py-2 mask-[linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
             <div className="myjo-testimonial-marquee flex w-max items-stretch gap-4 px-1">
               <div className="w-[268px] shrink-0 rounded-xl border border-white/10 bg-[#121316] p-4 text-left shadow-md">
                 <div className="flex items-center gap-3">

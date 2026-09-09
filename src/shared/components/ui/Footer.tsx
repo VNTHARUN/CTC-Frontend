@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-[#050607] text-[#98A2B3] border-t border-[#1C1F26] font-sans relative overflow-hidden">
+    <footer className="w-full bg-[var(--c2c-surface)] text-[var(--c2c-text-muted)] border-t border-[var(--c2c-border)] font-sans relative overflow-hidden">
       {/* Top subtle glow line */}
       <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-[#A3E635]/50 to-transparent"></div>
 
-      <div className="mx-auto max-w-7xl px-6 pt-12 pb-8 sm:px-8 lg:px-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 pb-12 border-b border-[#1C1F26]">
+      <div className="c2c-container pt-12 pb-24 md:pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 pb-12 border-b border-[var(--c2c-border)]">
           
           {/* Column 1: Brand & Tagline */}
           <div className="lg:col-span-2 flex flex-col gap-4">
@@ -39,7 +39,7 @@ export const Footer: React.FC = () => {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="GitHub"
-                className="w-9 h-9 rounded-xl bg-[#121316] border border-[#22252C] flex items-center justify-center text-[#98A2B3] hover:text-white hover:border-[#A3E635] hover:bg-[#A3E635]/10 transition-all cursor-pointer"
+                className="c2c-icon-button rounded-xl"
               >
                 <i className="fa-brands fa-github text-sm"></i>
               </a>
@@ -48,7 +48,7 @@ export const Footer: React.FC = () => {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="LinkedIn"
-                className="w-9 h-9 rounded-xl bg-[#121316] border border-[#22252C] flex items-center justify-center text-[#98A2B3] hover:text-white hover:border-[#A3E635] hover:bg-[#A3E635]/10 transition-all cursor-pointer"
+                className="c2c-icon-button rounded-xl"
               >
                 <i className="fa-brands fa-linkedin-in text-sm"></i>
               </a>
@@ -57,7 +57,7 @@ export const Footer: React.FC = () => {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Twitter"
-                className="w-9 h-9 rounded-xl bg-[#121316] border border-[#22252C] flex items-center justify-center text-[#98A2B3] hover:text-white hover:border-[#A3E635] hover:bg-[#A3E635]/10 transition-all cursor-pointer"
+                className="c2c-icon-button rounded-xl"
               >
                 <i className="fa-brands fa-x-twitter text-sm"></i>
               </a>
@@ -66,7 +66,7 @@ export const Footer: React.FC = () => {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Discord"
-                className="w-9 h-9 rounded-xl bg-[#121316] border border-[#22252C] flex items-center justify-center text-[#98A2B3] hover:text-white hover:border-[#A3E635] hover:bg-[#A3E635]/10 transition-all cursor-pointer"
+                className="c2c-icon-button rounded-xl"
               >
                 <i className="fa-brands fa-discord text-sm"></i>
               </a>

@@ -1,40 +1,40 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './app/store';
 import { router } from './routes/appRoutes';
-import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from './shared/context/ThemeContext';
+import { AppToaster } from './shared/components/ui/AppToaster';
+import { useAppDispatch } from './app/hooks';
+import { initializeAuth } from './features/auth/redux/authSlice';
+import { consumeOAuthPending } from './features/auth/utils/googleOAuth';
+import { toAuthFeedback, toastAuthFeedback } from './features/auth/utils/authToasts';
+
+const AppInner: React.FC = () => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    void (async () => {
+      const res = await dispatch(initializeAuth());
+      if (initializeAuth.rejected.match(res) && consumeOAuthPending()) {
+        toastAuthFeedback(toAuthFeedback(res.payload), 'error');
+      }
+    })();
+  }, [dispatch]);
+
+  return (
+    <>
+      <RouterProvider router={router} />
+      <AppToaster />
+    </>
+  );
+};
 
 export const App: React.FC = () => {
   return (
     <Provider store={store}>
       <ThemeProvider>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            background: '#111827',
-            color: '#F9FAFB',
-            border: '1px solid #1F2937',
-            fontSize: '13px',
-            fontFamily: 'Inter, sans-serif',
-          },
-          success: {
-            iconTheme: {
-              primary: '#10B981',
-              secondary: '#111827',
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: '#F43F5E',
-              secondary: '#111827',
-            },
-          },
-        }}
-      />
-      <RouterProvider router={router} />
+        <AppInner />
       </ThemeProvider>
     </Provider>
   );

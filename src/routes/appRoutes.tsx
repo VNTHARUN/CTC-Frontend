@@ -1,18 +1,21 @@
+/* oxlint-disable react/only-export-components -- route modules intentionally define lazy component references */
 import React, { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { MainLayout } from '../layouts/MainLayout';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { ProtectedRoute } from '../core/guards/ProtectedRoute';
+import { AdminRoute } from '../core/guards/AdminRoute';
 import { GuestRoute } from '../core/guards/GuestRoute';
 import { Skeleton } from '../shared/components/ui/Skeleton';
+import { Login as LoginPage } from '../features/auth/pages/Login';
 
 // Lazy-loaded Pages for Production Code Splitting
 const Landing = lazy(() => import('../features/landing/pages/Landing').then((m) => ({ default: m.Landing })));
-const Login = lazy(() => import('../features/auth/pages/Login').then((m) => ({ default: m.Login })));
 const Signup = lazy(() => import('../features/auth/pages/Signup').then((m) => ({ default: m.Signup })));
 const ForgotPassword = lazy(() => import('../features/auth/pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
 
 const PracticePage = lazy(() => import('../features/problems/pages/PracticePage').then((m) => ({ default: m.PracticePage })));
+const AdminPracticePage = lazy(() => import('../features/problems/pages/AdminPracticePage').then((m) => ({ default: m.AdminPracticePage })));
 const ProblemList = lazy(() => import('../features/problems/pages/ProblemList').then((m) => ({ default: m.ProblemList })));
 const ProblemDetails = lazy(() => import('../features/problems/pages/ProblemDetails').then((m) => ({ default: m.ProblemDetails })));
 const CompanyList = lazy(() => import('../features/companies/pages/CompanyList').then((m) => ({ default: m.CompanyList })));
@@ -60,7 +63,7 @@ export const router = createBrowserRouter([
       {
         element: <AuthLayout />,
         children: [
-          { path: '/login', element: withSuspense(Login) },
+          { path: '/login', element: <LoginPage /> },
           { path: '/signup', element: withSuspense(Signup) },
           { path: '/forgot-password', element: withSuspense(ForgotPassword) },
         ],
@@ -79,6 +82,12 @@ export const router = createBrowserRouter([
         children: [
           { path: '/dashboard', element: <Navigate to="/practice" replace /> },
           { path: '/practice', element: withSuspense(PracticePage) },
+          {
+            element: <AdminRoute />,
+            children: [
+              { path: '/admin/practice', element: withSuspense(AdminPracticePage) },
+            ],
+          },
           { path: '/problems', element: <Navigate to="/practice" replace /> },
           { path: '/roadmaps', element: withSuspense(RoadmapList) },
           { path: '/roadmaps/:slug', element: withSuspense(RoadmapDetails) },

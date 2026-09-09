@@ -28,9 +28,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             id={inputId}
             ref={ref}
-            className={`w-full bg-[#090A0C] border ${
-              error ? 'border-rose-500/80 focus:ring-rose-500/50' : 'border-white/10 focus:border-[#A3E635] focus:ring-[#A3E635]/30'
-            } text-gray-100 placeholder-gray-500 rounded-lg text-sm px-3.5 py-2.5 transition-all outline-none focus:ring-2 ${
+            aria-invalid={Boolean(error)}
+            aria-describedby={error || helperText ? `${inputId}-message` : undefined}
+            className={`min-h-11 w-full bg-[var(--c2c-surface)] border ${
+              error ? 'border-rose-500/80' : 'border-[var(--c2c-border)] focus:border-[var(--c2c-primary)]'
+            } text-[var(--c2c-text)] placeholder:text-[var(--c2c-text-subtle)] rounded-lg text-sm px-3.5 py-2.5 transition-all outline-none ${
               leftIcon ? 'pl-10' : ''
             } ${rightIcon ? 'pr-10' : ''} ${className}`}
             {...props}
@@ -38,9 +40,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {rightIcon && <div className="absolute right-3.5 text-gray-400 flex items-center">{rightIcon}</div>}
         </div>
         {error ? (
-          <span className="text-xs text-rose-400 font-medium">{error}</span>
+          <span id={`${inputId}-message`} className="text-xs text-rose-400 font-medium">{error}</span>
         ) : helperText ? (
-          <span className="text-xs text-gray-500">{helperText}</span>
+          <span id={`${inputId}-message`} className="text-xs text-gray-500">{helperText}</span>
         ) : null}
       </div>
     );

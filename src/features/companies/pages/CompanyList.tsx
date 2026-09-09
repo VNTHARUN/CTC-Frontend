@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { fetchCompanies } from '../redux/companySlice';
 import { Skeleton } from '../../../shared/components/ui/Skeleton';
 import { EmptyState } from '../../../shared/components/ui/EmptyState';
+import { PageContainer, PageHeader } from '../../../shared/components/ui/Page';
 
 const fallbackLogos: Record<string, string> = {
   accenture: 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Accenture.svg',
@@ -28,116 +29,151 @@ export const CompanyList: React.FC = () => {
   );
 
   return (
-    <div className="w-full flex flex-col items-center pb-20 font-sans">
-      
-      {/* Hero Section */}
-      <section id="companiesshero" className="relative mx-auto mt-16 max-w-7xl px-6 text-center md:px-8">
-        <h1 className="animate-fade-in -translate-y-4 text-balance whitespace-nowrap bg-gradient-to-br from-white from-30% to-white/40 bg-clip-text py-6 text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-medium leading-none tracking-tighter text-transparent opacity-100 font-heading">
-          Company Wise Questions
-        </h1>
-        <p className="animate-fade-in mb-6 -translate-y-4 text-balance text-lg tracking-tight text-gray-400 opacity-100 md:text-xl font-sans">
-          Get the previous year questions of all the companies
-        </p>
-        <div className="flex justify-center">
-          <div data-orientation="horizontal" role="none" className="shrink-0 h-0.5 rounded-lg w-60 bg-gradient-to-r from-purple-600 via-violet-500 to-pink-600 bg-no-repeat"></div>
-        </div>
-      </section>
+    <main className="c2c-page pb-24 font-sans">
+      <PageContainer>
+        <PageHeader
+          eyebrow="Company library"
+          title="Company-wise questions"
+          description="Practice previous-year questions and prepare for the companies you want to join."
+        />
 
-      {/* CLEAN RECTANGULAR CONTAINER BOX (MINIMAL CONTENT) */}
-      <div className="w-full max-w-2xl px-4 mt-8">
-        <div className="bg-[#121316] border border-white/10 hover:border-[#A3E635]/40 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors shadow-md">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-lg bg-transparent border border-white/10 flex items-center justify-center shrink-0">
-              <i className="fa-solid fa-list-check text-base text-[#A3E635]"></i>
-            </div>
+        <section
+          aria-labelledby="exam-patterns-title"
+          className="c2c-card mt-8 flex flex-col gap-5 overflow-hidden p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6"
+        >
+          <div className="flex items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#A3E635]/20 bg-[#A3E635]/10 text-[#A3E635]">
+              <i className="fa-solid fa-list-check" aria-hidden="true" />
+            </span>
             <div>
-              <h3 className="text-base font-bold text-white font-heading">
-                Company Exam Patterns
-              </h3>
-              <p className="text-xs text-gray-400 font-sans">
-                Explore recruitment exam patterns &amp; syllabus
+              <h2 id="exam-patterns-title" className="font-heading text-lg font-bold text-[var(--c2c-text)]">
+                Company exam patterns
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-[var(--c2c-text-muted)]">
+                Review recruitment stages, test formats, and syllabus before you begin.
               </p>
             </div>
           </div>
-
           <Link
             to="/company-patterns"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#A3E635] hover:bg-[#84CC16] text-xs font-bold text-black transition-all font-sans shrink-0"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#A3E635] px-5 text-sm font-bold text-black transition-colors hover:bg-[#BEF264] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A3E635] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--c2c-bg)]"
           >
-            <span>Explore</span>
-            <i className="fa-solid fa-chevron-right text-[10px]"></i>
+            Explore patterns
+            <i className="fa-solid fa-chevron-right text-[10px]" aria-hidden="true" />
           </Link>
-        </div>
-      </div>
+        </section>
 
-      {/* Search Input Filter */}
-      <div className="w-full max-w-xs sm:max-w-md mt-6 px-4">
-        <div className="relative w-full">
-          <i className="fa-solid fa-magnifying-glass text-xs absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500"></i>
-          <input
-            type="text"
-            placeholder="Search companies by name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#121316] border border-white/10 text-xs text-gray-200 placeholder-gray-500 rounded-xl pl-10 pr-4 py-2.5 outline-none focus:border-[#A3E635] transition-colors"
-          />
-        </div>
-      </div>
+        <section aria-label="Company directory" className="mt-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="font-heading text-xl font-bold text-[var(--c2c-text)]">Browse companies</h2>
+              <p className="mt-1 text-sm text-[var(--c2c-text-muted)]">
+                {loading ? 'Loading company directory…' : `${filteredCompanies.length} ${filteredCompanies.length === 1 ? 'company' : 'companies'} available`}
+              </p>
+            </div>
+            <div className="w-full sm:max-w-md">
+              <label htmlFor="company-search" className="mb-2 block text-sm font-semibold text-[var(--c2c-text)]">
+                Search companies
+              </label>
+              <div className="relative">
+                <i
+                  className="fa-solid fa-magnifying-glass pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--c2c-text-subtle)]"
+                  aria-hidden="true"
+                />
+                <input
+                  id="company-search"
+                  type="search"
+                  placeholder="Search by name or industry"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="min-h-11 w-full rounded-xl border border-[var(--c2c-border)] bg-[var(--c2c-surface)] py-2.5 pl-11 pr-4 text-sm text-[var(--c2c-text)] shadow-[var(--c2c-shadow-sm)] outline-none transition placeholder:text-[var(--c2c-text-subtle)] hover:border-[var(--c2c-border-strong)] focus-visible:border-[#A3E635] focus-visible:ring-2 focus-visible:ring-[#A3E635]/35"
+                />
+              </div>
+            </div>
+          </div>
 
-      {/* Companies Grid - Exactly 3 per Row on Medium screens, max-w-2xl */}
-      {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 m-2 max-w-2xl mt-10 w-full px-4">
-          <Skeleton className="h-44 w-full rounded-lg" count={6} />
-        </div>
-      ) : filteredCompanies.length === 0 ? (
-        <div className="mt-10">
-          <EmptyState
-            title="No companies found"
-            description="No company matches your current search term."
-            actionText="Clear Search"
-            onAction={() => setSearchTerm('')}
-            icon={<i className="fa-solid fa-building text-2xl text-gray-500"></i>}
-          />
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 m-2 max-w-2xl mt-10 w-full px-4">
-          {filteredCompanies.map((company) => {
-            const logoUrl = company.logo || fallbackLogos[company.slug] || `https://gurucodes-data.pages.dev/img/companies/${company.slug}.png`;
-
-            return (
-              <Link
-                key={company.id}
-                to={`/companies/${company.slug}`}
-                className="h-full p-2 border border-white/10 hover:border-white/30 rounded-lg bg-[#121316] hover:bg-[#1a1c22] transition-all group shadow-md"
-              >
-                <div className="flex h-full flex-col w-full items-center truncate">
-                  <img
-                    className="rounded-lg object-contain h-32 p-6 bg-white aspect-square w-full shadow-sm"
-                    width="200"
-                    height="200"
-                    alt={company.name}
-                    src={logoUrl}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      if (fallbackLogos[company.slug] && target.src !== fallbackLogos[company.slug]) {
-                        target.src = fallbackLogos[company.slug];
-                      } else {
-                        target.src = `https://logo.clearbit.com/${company.slug.replace('-nqt', '')}.com`;
-                      }
-                    }}
-                  />
-                  <div className="text-wrap w-full text-center mb-3 mt-3">
-                    <p className="text-lg font-semibold text-white font-sans tracking-tight">
-                      {company.name}
-                    </p>
-                  </div>
+          {loading ? (
+            <div
+              className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 xl:grid-cols-4"
+              aria-label="Loading companies"
+              aria-live="polite"
+            >
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} className="c2c-card overflow-hidden p-3 sm:p-4">
+                  <Skeleton className="aspect-[4/3] w-full rounded-xl" />
+                  <Skeleton className="mt-4 h-5 w-3/4" />
+                  <Skeleton className="mt-2 h-3.5 w-1/2" />
+                  <Skeleton className="mt-4 h-3.5 w-2/3" />
                 </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+              ))}
+            </div>
+          ) : filteredCompanies.length === 0 ? (
+            <div className="mt-6">
+              <EmptyState
+                title="No companies found"
+                description={`No company matches “${searchTerm}”. Try another name or industry.`}
+                actionText="Clear search"
+                onAction={() => setSearchTerm('')}
+                icon={<i className="fa-solid fa-building text-2xl text-[#A3E635]" aria-hidden="true" />}
+              />
+            </div>
+          ) : (
+            <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 xl:grid-cols-4">
+              {filteredCompanies.map((company) => {
+                const logoUrl = company.logo || fallbackLogos[company.slug] || `https://gurucodes-data.pages.dev/img/companies/${company.slug}.png`;
+                const questionCount =
+                  ('questionCount' in company && company.questionCount) ||
+                  ('problemCount' in company && company.problemCount);
 
-    </div>
+                return (
+                  <Link
+                    key={company.id}
+                    to={`/companies/${company.slug}`}
+                    aria-label={`View ${company.name} questions`}
+                    className="c2c-card c2c-card-interactive group flex min-w-0 flex-col overflow-hidden p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A3E635] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--c2c-bg)] sm:p-4"
+                  >
+                    <div className="flex aspect-[4/3] items-center justify-center rounded-xl border border-[var(--c2c-border)] bg-white p-5 sm:p-7">
+                      <img
+                        className="h-full w-full object-contain transition-transform duration-200 group-hover:scale-[1.03]"
+                        width="200"
+                        height="150"
+                        loading="lazy"
+                        alt={`${company.name} logo`}
+                        src={logoUrl}
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          if (fallbackLogos[company.slug] && target.src !== fallbackLogos[company.slug]) {
+                            target.src = fallbackLogos[company.slug];
+                          } else {
+                            target.onerror = null;
+                            target.src = `https://logo.clearbit.com/${company.slug.replace('-nqt', '')}.com`;
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-1 flex-col pt-4">
+                      <h3 className="truncate font-heading text-base font-bold text-[var(--c2c-text)] sm:text-lg">
+                        {company.name}
+                      </h3>
+                      {company.industry && (
+                        <p className="mt-1 line-clamp-1 text-xs text-[var(--c2c-text-muted)] sm:text-sm">
+                          {company.industry}
+                        </p>
+                      )}
+                      <div className="mt-auto flex items-center justify-between gap-2 pt-4 text-xs text-[var(--c2c-text-muted)]">
+                        <span>{questionCount ? `${questionCount} questions` : 'Practice questions'}</span>
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#A3E635]/10 text-[#A3E635] transition-colors group-hover:bg-[#A3E635] group-hover:text-black">
+                          <i className="fa-solid fa-arrow-right text-[10px]" aria-hidden="true" />
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </PageContainer>
+    </main>
   );
 };

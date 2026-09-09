@@ -1,4 +1,4 @@
 import React from 'react';
 import { PracticeExplorer } from '../components/PracticeExplorer';
 
-export const PracticePage: React.FC = () => <PracticeExplorer role="USER" />;
+export const AdminPracticePage: React.FC = () => <PracticeExplorer role="ADMIN" />;

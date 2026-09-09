@@ -5,11 +5,14 @@
 export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
-    FORGOT_PASSWORD: '/auth/forgot-password',
-    REFRESH_TOKEN: '/auth/refresh-token',
-    ME: '/auth/me',
+    REGISTER: '/signUp',         
+    GENERATE_PASSWORD_RESET_OTP: '/auth/generatePasswordResetOtp',
+    VERIFY_PASSWORD_RESET_OTP: '/auth/verifyPasswordResetOtp',
+    REFRESH_TOKEN: '/auth/refresh',
+    // ME: '/auth/me', // Not yet implemented by backend
     LOGOUT: '/auth/logout',
+    // Google OAuth lives on the backend origin, not under /api/v1.
+    // See getGoogleAuthorizationUrl() in features/auth/utils/googleOAuth.ts
   },
   PROBLEMS: {
     LIST: '/problems',

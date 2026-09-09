@@ -15,7 +15,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-[#111827] border border-gray-800 rounded-lg text-xs text-gray-400">
+    <nav aria-label="Pagination" className="c2c-card flex items-center justify-between px-4 py-3 text-xs text-[var(--c2c-text-muted)]">
       <div>
         Page <span className="font-semibold text-gray-200">{currentPage}</span> of{' '}
         <span className="font-semibold text-gray-200">{totalPages}</span>
@@ -24,18 +24,20 @@ export const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-1.5 rounded-md border border-gray-800 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          aria-label="Go to previous page"
+          className="c2c-icon-button disabled:cursor-not-allowed disabled:opacity-40"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-1.5 rounded-md border border-gray-800 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          aria-label="Go to next page"
+          className="c2c-icon-button disabled:cursor-not-allowed disabled:opacity-40"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
-    </div>
+    </nav>
   );
 };

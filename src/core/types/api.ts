@@ -22,3 +22,24 @@ export interface ApiErrorResponse {
   statusCode: number;
   errors?: Record<string, string[]>;
 }
+
+/**
+ * Backend envelope shape from the Spring Boot API.
+ * All endpoints return this structure.
+ *
+ * Example:
+ * {
+ *   "statusCode": 200,
+ *   "message": "User Created Successfully",
+ *   "data": { ... },
+ *   "errors": null,
+ *   "timestamp": "2026-08-12T22:12:10.1129678"
+ * }
+ */
+export interface BackendEnvelope<T = any> {
+  statusCode: number;
+  message: string;
+  data: T | null;
+  errors: string[] | null;
+  timestamp: string;
+}

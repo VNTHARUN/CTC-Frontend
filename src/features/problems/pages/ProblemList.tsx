@@ -5,6 +5,7 @@ import { fetchProblems, toggleSolveProblem } from '../redux/problemSlice';
 import { toggleBookmarkItem, fetchBookmarks } from '../../bookmarks/redux/bookmarkSlice';
 import { openAuthModal } from '../../auth/redux/authSlice';
 import { toast } from 'react-hot-toast';
+import { PageContainer, PageHeader, StatCard } from '../../../shared/components/ui/Page';
 
 export const ProblemList: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -76,40 +77,64 @@ export const ProblemList: React.FC = () => {
     { num: '21', title: 'Tries & Segment Trees', topic: 'Tries', total: 2, solved: 1 },
   ];
 
+  const solvedCount = problems.filter((problem) => problem.isSolved).length;
+  const bookmarkedCount = problems.filter((problem) =>
+    bookmarks.some((bookmark) => bookmark.itemId === problem.id)
+  ).length;
+
   return (
-    <div className="w-full flex flex-col items-center pb-20 font-sans">
-      {/* BeyondBasics Hero Header Section - Matching Companies Page Typography */}
-      <section id="dsaHero" className="relative mx-auto mt-16 max-w-7xl px-6 text-center md:px-8 flex flex-col items-center">
-        <h1 className="animate-fade-in -translate-y-4 text-balance whitespace-nowrap bg-gradient-to-br from-white from-30% to-white/40 bg-clip-text py-6 text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-medium leading-none tracking-tighter text-transparent opacity-100 font-heading">
-          Ultimate DSA Sheet
-        </h1>
-        <p className="animate-fade-in mb-6 -translate-y-4 text-balance text-lg tracking-tight text-gray-400 opacity-100 md:text-xl font-sans">
-          Problem Solving: Everything from Basics to Advanced
-        </p>
-        <div className="flex justify-center mb-6">
-          <div className="shrink-0 bg-white/10 h-0.5 rounded-lg w-60 bg-gradient-to-r from-[#38BDF8] via-[#818CF8] to-[#C084FC]"></div>
-        </div>
+    <main className="c2c-page min-h-screen bg-[var(--c2c-bg)] font-sans">
+      <PageContainer>
+        <PageHeader
+          eyebrow="Learn · Practice · Master"
+          title="Ultimate DSA Sheet"
+          description="Build strong problem-solving habits with a structured path from fundamentals to advanced data structures and algorithms."
+        >
+          <div
+            className="mx-auto mt-6 inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-xl border border-[var(--c2c-border)] bg-[var(--c2c-surface)] p-1"
+            role="group"
+            aria-label="Filter problems by status"
+          >
+            {(['All', 'Answered', 'Bookmarked'] as const).map((status) => (
+              <button
+                key={status}
+                type="button"
+                onClick={() => setStatusFilter(status)}
+                aria-pressed={statusFilter === status}
+                className={`min-h-11 whitespace-nowrap rounded-lg px-4 text-sm font-semibold transition-colors ${
+                  statusFilter === status
+                    ? 'bg-[var(--c2c-primary)] text-[var(--c2c-primary-foreground)]'
+                    : 'text-[var(--c2c-text-muted)] hover:bg-[var(--c2c-surface-hover)] hover:text-[var(--c2c-text)]'
+                }`}
+              >
+                {status === 'All' ? 'All problems' : status === 'Answered' ? 'Solved' : 'Bookmarked'}
+              </button>
+            ))}
+          </div>
+        </PageHeader>
 
-        {/* Status & Bookmarks Filter Tabs */}
-        <div className="flex items-center justify-center gap-2 bg-[#202225] p-1.5 rounded-xl border border-white/10 shadow-md mt-2">
-          {(['All', 'Answered', 'Bookmarked'] as const).map((st) => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                statusFilter === st
-                  ? 'bg-[#A3E635] text-black shadow-sm'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              {st === 'All' ? 'All Problems' : st === 'Answered' ? 'Answered ✓' : 'Bookmarked'}
-            </button>
-          ))}
-        </div>
-      </section>
+        <section className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Problem sheet overview">
+          <StatCard
+            label="Problems"
+            value={problems.length}
+            detail="Available in this sheet"
+            icon={<i className="fa-solid fa-code" aria-hidden="true" />}
+          />
+          <StatCard
+            label="Solved"
+            value={solvedCount}
+            detail={problems.length ? `${Math.round((solvedCount / problems.length) * 100)}% complete` : 'Start your first problem'}
+            icon={<i className="fa-solid fa-circle-check text-emerald-400" aria-hidden="true" />}
+          />
+          <StatCard
+            label="Bookmarked"
+            value={bookmarkedCount}
+            detail="Saved for later"
+            icon={<i className="fa-solid fa-bookmark" aria-hidden="true" />}
+          />
+        </section>
 
-      {/* DSA Sheet Single Div Per Row List - Matching Companies Page Div Hover Design */}
-      <div className="flex flex-col gap-3.5 max-w-5xl w-full mt-10 px-4">
+        <section className="mt-8 flex flex-col gap-3" aria-label="DSA curriculum modules">
         {dsaModules.map((module) => {
           const isExpanded = expandedModuleNum === module.num;
 
@@ -131,159 +156,177 @@ export const ProblemList: React.FC = () => {
           const solvedInModule = topicQuestions.filter((q) => q.isSolved).length;
           const progressPercent = Math.round((solvedInModule / (topicQuestions.length || 1)) * 100);
 
+          const moduleButtonId = `module-${module.num}-button`;
+          const modulePanelId = `module-${module.num}-panel`;
+
           return (
-            <div
-              key={module.num}
-              className={`w-full rounded-lg transition-all duration-200 shadow-md border overflow-hidden ${
-                isExpanded
-                  ? 'bg-[#2f3136] border-white/40 ring-1 ring-white/20'
-                  : 'bg-[#202225] hover:bg-[#2f3136] border-white/10 hover:border-white/30'
-              }`}
-            >
-              {/* Single Div Header Bar - Click to Toggle */}
-              <div
+            <article key={module.num} className="c2c-card overflow-hidden">
+              <button
+                id={moduleButtonId}
+                type="button"
                 onClick={() => setExpandedModuleNum(isExpanded ? null : module.num)}
-                className="group flex items-center justify-between p-5 cursor-pointer select-none"
+                aria-expanded={isExpanded}
+                aria-controls={modulePanelId}
+                className="group flex min-h-11 w-full items-center gap-3 p-4 text-left transition-colors hover:bg-[var(--c2c-surface-hover)] sm:gap-4 sm:p-5"
               >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-11 h-11 rounded-lg bg-[#121113] border border-white/10 flex items-center justify-center shrink-0">
-                    <span className="text-base font-mono font-bold text-white">
-                      {module.num}
-                    </span>
-                  </div>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--c2c-border)] bg-[var(--c2c-surface-raised)] font-mono text-sm font-bold text-[var(--c2c-primary)]">
+                  {module.num}
+                </span>
 
-                  <div className="flex flex-col min-w-0">
-                    <h3 className="text-base sm:text-lg font-semibold text-white font-heading tracking-tight group-hover:text-white transition-colors truncate">
-                      {module.title}
-                    </h3>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <div className="w-32 h-1.5 bg-[#121113] rounded-full overflow-hidden border border-white/5">
-                        <div
-                          className="h-full bg-gradient-to-r from-[#38BDF8] via-[#818CF8] to-[#C084FC] rounded-full transition-all duration-300"
-                          style={{ width: `${progressPercent || (isExpanded ? 100 : 0)}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-xs font-mono text-gray-400 font-sans">
-                        {solvedInModule} / {topicQuestions.length} Solved ({progressPercent}%)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono text-gray-400 hidden sm:inline-block bg-[#121113] px-3 py-1 rounded-lg border border-white/5">
-                    {topicQuestions.length} Questions
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-heading text-base font-semibold text-[var(--c2c-text)] sm:text-lg">
+                    {module.title}
                   </span>
-                  <i
-                    className={`fa-solid fa-chevron-down text-xs text-gray-400 group-hover:text-white transition-transform duration-300 ${
-                      isExpanded ? 'rotate-180 text-white' : ''
-                    }`}
-                  ></i>
-                </div>
-              </div>
+                  <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--c2c-text-muted)]">
+                    <span>Module {Number(module.num)} of {dsaModules.length}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{topicQuestions.length} {topicQuestions.length === 1 ? 'problem' : 'problems'}</span>
+                    <span aria-hidden="true">·</span>
+                    <span className="font-medium text-emerald-400">{solvedInModule} solved</span>
+                  </span>
+                  <span className="mt-2 flex max-w-md items-center gap-3">
+                    <span
+                      className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--c2c-surface-raised)]"
+                      role="progressbar"
+                      aria-label={`${module.title} progress`}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={progressPercent}
+                    >
+                      <span
+                        className="block h-full rounded-full bg-emerald-500 transition-[width] duration-300"
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </span>
+                    <span className="w-9 text-right font-mono text-xs text-[var(--c2c-text-muted)]">
+                      {progressPercent}%
+                    </span>
+                  </span>
+                </span>
 
-              {/* Inline Questions List */}
+                <span
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[var(--c2c-text-muted)] transition-colors group-hover:text-[var(--c2c-text)]"
+                  aria-hidden="true"
+                >
+                  <i className={`fa-solid fa-chevron-down text-sm transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                </span>
+              </button>
+
               {isExpanded && (
-                <div className="border-t border-white/10 bg-[#17191c] p-5 flex flex-col gap-3 animate-fade-in">
-                  <div className="flex items-center justify-between pb-2 text-xs font-mono font-semibold text-gray-400 uppercase tracking-wider">
-                    <span>{module.title} Questions ({topicQuestions.length})</span>
-                    <span>Status &amp; Action</span>
-                  </div>
-
+                <div
+                  id={modulePanelId}
+                  role="region"
+                  aria-labelledby={moduleButtonId}
+                  className="border-t border-[var(--c2c-border)] bg-[var(--c2c-surface-raised)]/50 p-3 sm:p-4"
+                >
                   {loading ? (
-                    <div className="py-4 text-center text-xs font-sans text-gray-400">
-                      Loading questions...
+                    <div className="flex min-h-36 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[var(--c2c-border)] text-center text-[var(--c2c-text-muted)]" role="status">
+                      <span className="c2c-spinner text-[var(--c2c-primary)]" aria-hidden="true" />
+                      <div>
+                        <p className="text-sm font-semibold text-[var(--c2c-text)]">Loading problems</p>
+                        <p className="mt-1 text-xs">Preparing this module for you…</p>
+                      </div>
                     </div>
                   ) : topicQuestions.length === 0 ? (
-                    <div className="py-4 text-center text-xs font-sans text-gray-400">
-                      No questions match the current filter ({statusFilter}).
+                    <div className="flex min-h-36 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[var(--c2c-border)] px-4 text-center">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--c2c-primary)]/10 text-[var(--c2c-primary)]" aria-hidden="true">
+                        <i className="fa-solid fa-filter-circle-xmark" />
+                      </span>
+                      <div>
+                        <p className="text-sm font-semibold text-[var(--c2c-text)]">No matching problems</p>
+                        <p className="mt-1 text-xs text-[var(--c2c-text-muted)]">
+                          This module has no {statusFilter.toLowerCase()} problems right now.
+                        </p>
+                      </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-2.5">
+                    <ul className="flex flex-col gap-2" aria-label={`${module.title} problems`}>
                       {topicQuestions.map((q) => {
                         const isBookmarked = bookmarks.some((b) => b.itemId === q.id);
 
                         return (
-                          <div
-                            key={q.id}
-                            className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-[#202225] hover:bg-[#2f3136] border border-white/10 hover:border-white/30 rounded-lg transition-all gap-3 shadow-sm"
-                          >
-                            <div className="flex items-center gap-3 min-w-0">
-                              {/* Tick / Untick Circle Button */}
+                          <li key={q.id} className="rounded-xl border border-[var(--c2c-border)] bg-[var(--c2c-surface)] p-3 transition-colors hover:border-[var(--c2c-border-strong)] sm:p-4">
+                            <div className="flex min-w-0 items-start gap-2 sm:items-center sm:gap-3">
                               <button
+                                type="button"
                                 onClick={(e) => handleSolveToggle(q.id, e)}
-                                className={`text-lg transition-colors shrink-0 cursor-pointer ${
-                                  q.isSolved ? 'text-[#A3E635]' : 'text-gray-600 hover:text-gray-400'
+                                className={`c2c-icon-button shrink-0 rounded-full ${
+                                  q.isSolved
+                                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
+                                    : ''
                                 }`}
-                                title={q.isSolved ? 'Mark as Not Answered' : 'Mark as Answered'}
+                                aria-label={q.isSolved ? `Mark ${q.title} as unsolved` : `Mark ${q.title} as solved`}
+                                aria-pressed={q.isSolved}
                               >
-                                <i className={`fa-solid ${q.isSolved ? 'fa-circle-check' : 'fa-circle'}`}></i>
+                                <i className={`fa-${q.isSolved ? 'solid' : 'regular'} fa-circle-check`} aria-hidden="true" />
                               </button>
 
-                              {/* Bookmark Star Button */}
-                              <button
-                                onClick={(e) => handleBookmarkToggle(q, e)}
-                                className={`p-1.5 rounded-md border transition-all text-xs shrink-0 cursor-pointer ${
-                                  isBookmarked
-                                    ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
-                                    : 'bg-[#121113] border-white/10 text-gray-500 hover:text-amber-400 hover:border-amber-400/40'
-                                }`}
-                                title={isBookmarked ? 'Remove Bookmark' : 'Bookmark Question'}
-                              >
-                                <i className={`fa-${isBookmarked ? 'solid' : 'regular'} fa-star`}></i>
-                              </button>
-
-                              <div className="flex flex-col truncate">
+                              <div className="min-w-0 flex-1">
                                 <Link
                                   to={`/problems/${q.slug}`}
-                                  className="text-sm sm:text-base font-semibold text-white hover:text-gray-200 transition-colors truncate font-sans tracking-tight"
+                                  className="block font-semibold text-[var(--c2c-text)] transition-colors hover:text-[var(--c2c-primary)]"
                                 >
                                   {q.title}
                                 </Link>
-                                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                <div className="mt-2 flex flex-wrap items-center gap-1.5">
                                   <span
-                                    className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md ${
+                                    className={`rounded-md border px-2 py-0.5 font-mono text-[10px] font-semibold ${
                                       q.difficulty === 'Easy'
-                                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
                                         : q.difficulty === 'Medium'
-                                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                                        : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                        ? 'border-amber-500/20 bg-amber-500/10 text-amber-400'
+                                        : 'border-rose-500/20 bg-rose-500/10 text-rose-400'
                                     }`}
                                   >
                                     {q.difficulty}
                                   </span>
-
                                   {q.companies && q.companies.length > 0 && (
-                                    <div className="flex items-center gap-1">
+                                    <>
                                       {q.companies.slice(0, 3).map((comp) => (
-                                        <span key={comp} className="text-[10px] font-mono text-gray-400 bg-[#121113] px-1.5 py-0.5 rounded border border-white/5">
+                                        <span key={comp} className="rounded border border-[var(--c2c-border)] bg-[var(--c2c-surface-raised)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--c2c-text-muted)]">
                                           {comp}
                                         </span>
                                       ))}
-                                    </div>
+                                    </>
                                   )}
                                 </div>
                               </div>
+
+                              <button
+                                type="button"
+                                onClick={(e) => handleBookmarkToggle(q, e)}
+                                className={`c2c-icon-button shrink-0 ${
+                                  isBookmarked
+                                    ? 'border-[var(--c2c-primary)]/40 bg-[var(--c2c-primary)]/10 text-[var(--c2c-primary)]'
+                                    : ''
+                                }`}
+                                aria-label={isBookmarked ? `Remove bookmark from ${q.title}` : `Bookmark ${q.title}`}
+                                aria-pressed={isBookmarked}
+                              >
+                                <i className={`fa-${isBookmarked ? 'solid' : 'regular'} fa-bookmark`} aria-hidden="true" />
+                              </button>
                             </div>
 
                             <Link
                               to={`/problems/${q.slug}`}
-                              className="shrink-0 px-4 py-2 text-xs font-semibold bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors border border-white/10 flex items-center justify-center gap-1.5 font-sans"
+                              className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-[var(--c2c-border)] bg-[var(--c2c-surface-raised)] px-4 text-sm font-semibold text-[var(--c2c-text)] transition-colors hover:border-[var(--c2c-primary)] hover:text-[var(--c2c-primary)] sm:ml-auto sm:mt-3 sm:w-fit"
+                              aria-label={`Open ${q.title}`}
                             >
-                              <span>Solve Problem</span>
-                              <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                              Solve problem
+                              <i className="fa-solid fa-arrow-right text-xs" aria-hidden="true" />
                             </Link>
-                          </div>
+                          </li>
                         );
                       })}
-                    </div>
+                    </ul>
                   )}
                 </div>
               )}
-            </div>
+            </article>
           );
         })}
-      </div>
-    </div>
+        </section>
+      </PageContainer>
+    </main>
   );
 };

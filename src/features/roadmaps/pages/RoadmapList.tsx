@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { PageContainer, PageHeader } from '../../../shared/components/ui/Page';
 
 export interface TechRoadmapCard {
   slug: string;
@@ -13,7 +14,7 @@ export interface TechRoadmapSection {
   items: TechRoadmapCard[];
 }
 
-export const roadmapSections: TechRoadmapSection[] = [
+const roadmapSections: TechRoadmapSection[] = [
   {
     title: 'Computer Science Fundamentals',
     subtitle: 'Build a rock-solid foundation for software engineering and placement interviews.',
@@ -85,59 +86,104 @@ export const roadmapSections: TechRoadmapSection[] = [
 
 export const RoadmapList: React.FC = () => {
   return (
-    <div className="w-full flex flex-col items-center pb-20 font-sans">
-      
-      {/* BeyondBasics Hero Header Section - DSA Sheet Page Theme */}
-      <section id="roadmapHero" className="relative mx-auto mt-16 max-w-7xl px-6 text-center md:px-8 flex flex-col items-center">
-        <h1 className="animate-fade-in -translate-y-4 text-balance whitespace-nowrap bg-gradient-to-br from-white from-30% to-white/40 bg-clip-text py-6 text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-medium leading-none tracking-tighter text-transparent opacity-100 font-heading">
-          Tech Placement Roadmaps
-        </h1>
-        <p className="animate-fade-in mb-6 -translate-y-4 text-balance text-lg tracking-tight text-gray-400 opacity-100 md:text-xl font-sans">
-          Step-by-step guides, resources, and learning paths for software engineering
-        </p>
-        <div className="flex justify-center mb-6">
-          <div className="shrink-0 bg-white/10 h-0.5 rounded-lg w-60 bg-gradient-to-r from-[#38BDF8] via-[#818CF8] to-[#C084FC]"></div>
-        </div>
-      </section>
+    <main className="c2c-page w-full font-sans">
+      <PageContainer>
+        <PageHeader
+          eyebrow="Choose your path"
+          title="Tech Placement Roadmaps"
+          description="Step-by-step guides, resources, and learning paths for software engineering."
+        />
 
-      {/* Roadmaps Grid Sections - DSA Sheet Theme Cards */}
-      <div className="w-full max-w-5xl mt-8 px-4 flex flex-col gap-12">
-        {roadmapSections.map((sec) => (
-          <section key={sec.title} className="w-full">
-            <div className="mb-6">
-              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-heading mb-2">
-                {sec.title}
-              </h2>
-              <div className="w-12 h-1 bg-gradient-to-r from-[#38BDF8] via-[#818CF8] to-[#C084FC] rounded-full mb-3"></div>
-              <p className="text-sm sm:text-base text-gray-400 font-sans font-normal">
-                {sec.subtitle}
-              </p>
-            </div>
+        <nav
+          aria-label="Roadmap categories"
+          className="mt-8 border-y border-[var(--c2c-border)] py-3 sm:mt-10"
+        >
+          <div className="-mx-[var(--c2c-gutter)] flex snap-x gap-2 overflow-x-auto px-[var(--c2c-gutter)] pb-1 sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 sm:pb-0">
+            {roadmapSections.map((section) => {
+              const sectionId = section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-            {/* Grid Cards - Matching DSA Sheet Card Aesthetics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-              {sec.items.map((item) => (
-                <Link
-                  key={item.slug}
-                  to={`/roadmaps/${item.slug}`}
-                  className="group flex items-center gap-4 p-4 min-h-[72px] bg-[#202225] hover:bg-[#2f3136] border border-white/10 hover:border-white/30 rounded-lg shadow-md transition-all active:scale-[0.98]"
+              return (
+                <a
+                  key={section.title}
+                  href={`#${sectionId}`}
+                  className="shrink-0 snap-start rounded-full border border-[var(--c2c-border)] bg-[var(--c2c-surface)] px-3.5 py-2 text-xs font-semibold text-[var(--c2c-text-muted)] transition-colors hover:border-[var(--c2c-primary)] hover:text-[var(--c2c-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--c2c-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--c2c-bg)]"
                 >
-                  {/* Transparent Icon Container */}
-                  <div className="w-11 h-11 rounded-lg bg-[#121113] border border-white/10 flex items-center justify-center shrink-0 group-hover:border-white/30 transition-colors">
-                    <i className={`${item.icon} text-lg text-white group-hover:scale-110 transition-transform`}></i>
-                  </div>
+                  {section.title}
+                </a>
+              );
+            })}
+          </div>
+        </nav>
 
-                  <span className="flex-1 text-sm sm:text-base font-semibold text-white font-sans group-hover:text-gray-200 transition-colors">
-                    {item.title}
+        <div className="mt-12 flex flex-col gap-14 md:mt-16 md:gap-20">
+          {roadmapSections.map((section, sectionIndex) => {
+            const sectionId = section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const descriptionId = `${sectionId}-description`;
+
+            return (
+              <section
+                id={sectionId}
+                key={section.title}
+                aria-labelledby={`${sectionId}-title`}
+                aria-describedby={descriptionId}
+                className="scroll-mt-28"
+              >
+                <div className="mb-6 flex items-start gap-4 sm:mb-8">
+                  <span
+                    aria-hidden="true"
+                    className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--c2c-primary)]/30 bg-[var(--c2c-primary)]/10 font-mono text-xs font-bold text-[var(--c2c-primary)]"
+                  >
+                    {String(sectionIndex + 1).padStart(2, '0')}
                   </span>
+                  <div>
+                    <h2
+                      id={`${sectionId}-title`}
+                      className="font-heading text-xl font-bold tracking-tight text-[var(--c2c-text)] sm:text-2xl"
+                    >
+                      {section.title}
+                    </h2>
+                    <p
+                      id={descriptionId}
+                      className="mt-1.5 max-w-2xl text-sm leading-6 text-[var(--c2c-text-muted)] sm:text-base"
+                    >
+                      {section.subtitle}
+                    </p>
+                  </div>
+                </div>
 
-                  <i className="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all shrink-0"></i>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
-    </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
+                  {section.items.map((item) => (
+                    <Link
+                      key={item.slug}
+                      to={`/roadmaps/${item.slug}`}
+                      aria-label={`Open the ${item.title} roadmap`}
+                      className="c2c-card c2c-card-interactive group flex min-h-24 items-center gap-4 p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--c2c-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--c2c-bg)] sm:p-5"
+                    >
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--c2c-border)] bg-[var(--c2c-surface-raised)] text-[var(--c2c-primary)] transition-colors group-hover:border-[var(--c2c-primary)]/40 group-hover:bg-[var(--c2c-primary)]/10">
+                        <i className={`${item.icon} text-lg`} aria-hidden="true" />
+                      </span>
+
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold leading-5 text-[var(--c2c-text)] sm:text-base">
+                          {item.title}
+                        </span>
+                        <span className="mt-1 block text-xs text-[var(--c2c-text-subtle)]">
+                          View roadmap
+                        </span>
+                      </span>
+
+                      <i
+                        className="fa-solid fa-arrow-right shrink-0 text-xs text-[var(--c2c-text-subtle)] transition-transform group-hover:translate-x-1 group-hover:text-[var(--c2c-primary)]"
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      </PageContainer>
+    </main>
   );
 };

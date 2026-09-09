@@ -2,9 +2,14 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { problemService, ProblemFilterParams } from '../../../services/problemService';
 import problemsData from '../../../mock/data/problems.json';
 
+export type Problem = (typeof problemsData)[number] & {
+  companyTags?: string[];
+  codeSnippets?: Record<string, string>;
+};
+
 export interface ProblemState {
-  problems: typeof problemsData;
-  selectedProblem: (typeof problemsData)[0] | null;
+  problems: Problem[];
+  selectedProblem: Problem | null;
   loading: boolean;
   error: string | null;
   filters: ProblemFilterParams;
@@ -67,7 +72,7 @@ const getSolvedStorage = (): Record<string, boolean> => {
   try {
     const saved = localStorage.getItem(SOLVED_STORAGE_KEY);
     return saved ? JSON.parse(saved) : {};
-  } catch (e) {
+  } catch {
     return {};
   }
 };
@@ -76,7 +81,7 @@ const getBookmarksStorage = (): any[] => {
   try {
     const saved = localStorage.getItem(BOOKMARKS_STORAGE_KEY);
     return saved ? JSON.parse(saved) : [];
-  } catch (e) {
+  } catch {
     return [];
   }
 };
@@ -90,7 +95,9 @@ export const toggleSolveProblem = createAsyncThunk(
     solvedMap[id] = updatedStatus;
     try {
       localStorage.setItem(SOLVED_STORAGE_KEY, JSON.stringify(solvedMap));
-    } catch (e) {}
+    } catch {
+      // Storage can be unavailable in private browsing; Redux still keeps the session state.
+    }
     return { id, isSolved: updatedStatus };
   }
 );

@@ -313,8 +313,6 @@ const aptitudeCategoriesData: AptitudeCategory[] = [
   },
 ];
 
-const SOLVED_STORAGE_KEY = 'myjo_solved_aptitude';
-
 interface AptitudePrepProps {
   defaultCategory?: 'quants' | 'logical' | 'verbal';
 }
@@ -393,14 +391,14 @@ export const AptitudePrep: React.FC<AptitudePrepProps> = ({ defaultCategory = 'q
     <div className="w-full flex flex-col items-center pb-24 font-sans text-gray-200">
       {/* BeyondBasics Hero Header Section - Exactly Matching Companies Page */}
       <section className="relative mx-auto mt-16 max-w-7xl px-6 text-center md:px-8 flex flex-col items-center">
-        <h1 className="animate-fade-in -translate-y-4 text-balance whitespace-nowrap bg-gradient-to-br from-white from-30% to-white/40 bg-clip-text py-6 text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-medium leading-none tracking-tighter text-transparent opacity-100 font-heading">
+        <h1 className="animate-fade-in -translate-y-4 text-balance whitespace-nowrap bg-linear-to-br from-white from-30% to-white/40 bg-clip-text py-6 text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-medium leading-none tracking-tighter text-transparent opacity-100 font-heading">
           Campus Aptitude Prep
         </h1>
         <p className="animate-fade-in mb-6 -translate-y-4 text-balance text-lg tracking-tight text-gray-400 opacity-100 md:text-xl font-sans">
           Master Quants, Logical Reasoning, and Verbal Ability for placement tests
         </p>
         <div className="flex justify-center mb-8">
-          <div className="shrink-0 bg-white/10 h-0.5 rounded-lg w-60 bg-gradient-to-r from-[#38BDF8] via-[#818CF8] to-[#C084FC]"></div>
+          <div className="shrink-0 bg-white/10 h-0.5 rounded-lg w-60 bg-linear-to-r from-[#38BDF8] via-[#818CF8] to-[#C084FC]"></div>
         </div>
 
         {/* Global Category Switcher Tabs - Company Card Hover Design */}

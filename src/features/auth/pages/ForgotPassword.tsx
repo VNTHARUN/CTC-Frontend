@@ -1,82 +1,41 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Link } from 'react-router-dom';
-import { Input } from '../../../shared/components/ui/Input';
-import { Button } from '../../../shared/components/ui/Button';
-import { authService } from '../../../services/authService';
-import { toast } from 'react-hot-toast';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../../../shared/context/ThemeContext';
+import { PasswordResetCard } from '../components/PasswordResetCard';
 
-const forgotSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-});
-
-type ForgotFormData = z.infer<typeof forgotSchema>;
-
+/**
+ * Standalone /forgot-password route. The same card is also rendered inside the
+ * auth modal when the user clicks "Forgot password?" on the sign-in form.
+ */
 export const ForgotPassword: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ForgotFormData>({
-    resolver: zodResolver(forgotSchema),
-  });
-
-  const onSubmit = async (data: ForgotFormData) => {
-    setLoading(true);
-    try {
-      await authService.forgotPassword(data.email);
-      toast.success('Password reset instructions sent to your email');
-      setSent(true);
-    } catch {
-      toast.error('Failed to send reset email');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { theme } = useTheme();
+  const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-xl font-bold text-gray-100 font-heading">Reset Password</h2>
-        <p className="text-xs text-gray-400 mt-1 font-sans">
-          Enter your registered email address to receive reset instructions
-        </p>
-      </div>
+    <div className="flex w-full justify-center px-4 py-10 sm:py-16 font-sans">
+      <div
+        className={`relative w-full max-w-120 overflow-hidden rounded-3xl border-2 shadow-[0_50px_120px_rgba(0,0,0,0.35)] animate-slide-up ${
+          theme === 'dark'
+            ? 'border-white/20 bg-linear-to-br from-[#111215] via-[#1a1c21] to-[#111215]'
+            : 'border-gray-300 bg-linear-to-br from-white via-gray-50 to-white'
+        }`}
+      >
+        {/* Top accent line */}
+        <div className="h-0.75 w-full bg-linear-to-r from-transparent via-[#A3E635] to-transparent animate-shimmer bg-size-[200%_100%]" />
 
-      {sent ? (
-        <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-[#48c78e] text-xs rounded-xl flex flex-col gap-3">
-          <p>We've sent password recovery instructions to your email inbox.</p>
-          <Link to="/login" className="text-white underline font-semibold">
-            Return to Login
-          </Link>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <Input
-            label="Email Address"
-            type="email"
-            placeholder="you@domain.com"
-            leftIcon={<i className="fa-solid fa-envelope text-xs"></i>}
-            error={errors.email?.message}
-            {...register('email')}
+        <div className="relative p-8 sm:p-10">
+          {/* Floating gradient orbs */}
+          <div className="pointer-events-none absolute top-10 right-10 h-40 w-40 animate-pulse rounded-full bg-[#A3E635]/10 blur-3xl" />
+          <div
+            className="pointer-events-none absolute bottom-10 left-10 h-48 w-48 animate-pulse rounded-full bg-[#627eff]/10 blur-3xl"
+            style={{ animationDelay: '1s' }}
           />
 
-          <Button type="submit" variant="primary" size="lg" isLoading={loading} className="w-full mt-2">
-            Send Reset Link
-          </Button>
-        </form>
-      )}
-
-      <div className="text-center pt-2">
-        <Link to="/login" className="inline-flex items-center gap-2 text-xs text-gray-400 hover:text-white transition-colors">
-          <i className="fa-solid fa-arrow-left text-xs"></i>
-          <span>Back to Login</span>
-        </Link>
+          <PasswordResetCard
+            theme={theme}
+            onBackToLogin={() => navigate('/login', { replace: true })}
+          />
+        </div>
       </div>
     </div>
   );

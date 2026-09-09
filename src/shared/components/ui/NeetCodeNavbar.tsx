@@ -18,16 +18,24 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const profileTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
 
   const { isAuthenticated, user: reduxUser } = useAppSelector((state) => state.auth);
   const { theme, toggleTheme } = useTheme();
 
   const isLoggedIn = user !== undefined ? user !== null : (isAuthenticated && reduxUser !== null);
-  const currentUser = user || reduxUser || {
-    fullName: 'Alex Developer',
-    email: 'alex.dev@Connect 2 Code.io',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb',
-  };
+  const currentUser = reduxUser || user || null;
+  const isAdmin = currentUser?.role?.toUpperCase() === 'ADMIN';
+
+  // Derived display values from real auth user
+  const displayName = currentUser
+    ? `${currentUser.firstName ?? ''} ${currentUser.lastName ?? ''}`.trim()
+    : '';
+  const displayEmail = currentUser?.email ?? '';
+  const avatarInitials = currentUser
+    ? `${currentUser.firstName?.[0] ?? ''}${currentUser.lastName?.[0] ?? ''}`.toUpperCase()
+    : 'U';
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -45,6 +53,22 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
     setIsProfileDropdownOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      if (isProfileDropdownOpen) {
+        setIsProfileDropdownOpen(false);
+        profileTriggerRef.current?.focus();
+      }
+      if (isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+        mobileTriggerRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isMobileMenuOpen, isProfileDropdownOpen]);
+
   const handleLogout = () => {
     setIsProfileDropdownOpen(false);
     setIsMobileMenuOpen(false);
@@ -57,6 +81,9 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
 
   const navItems = [
     { to: '/practice', label: 'Practice', icon: 'fa-solid fa-code' },
+    ...(isAdmin
+      ? [{ to: '/admin/practice', label: 'Admin Practice', icon: 'fa-solid fa-shield-halved' }]
+      : []),
     { to: '/aptitude', label: 'Aptitude', icon: 'fa-solid fa-brain' },
     { to: '/companies', label: 'Companies', icon: 'fa-solid fa-building' },
     { to: '/roadmaps', label: 'Roadmaps', icon: 'fa-solid fa-map' },
@@ -64,27 +91,28 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#121316]/95 border-b border-white/10 shadow-lg backdrop-blur-md font-sans">
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-14 sm:h-16 items-center justify-between gap-2 sm:gap-4">
+    <>
+    <header className="sticky top-0 z-50 w-full border-b border-(--c2c-border) bg-(--c2c-surface)/95 backdrop-blur-md font-sans">
+      <div className="c2c-container">
+        <div className="grid h-16 grid-cols-[1fr_auto] items-center gap-2 lg:grid-cols-[1fr_auto_1fr] lg:gap-6">
           
           {/* BRAND LOGO */}
           <Link
             to="/"
-            className="inline-flex items-center gap-2 sm:gap-2.5 group transition-opacity hover:opacity-90 shrink-0"
+            className="inline-flex min-w-0 items-center gap-2 sm:gap-2.5 group transition-opacity hover:opacity-90 justify-self-start"
           >
             <img
               src="/logo-mark-transparent.png"
               alt="Connect 2 Code Logo"
               className="h-7 sm:h-9 w-auto object-contain shrink-0"
             />
-            <span className="text-sm sm:text-lg font-bold text-white font-sans tracking-tight">
+            <span className="truncate text-sm sm:text-lg font-bold text-(--c2c-text) font-sans tracking-tight">
               Connect <span className="text-[#A3E635]">2</span> Code
             </span>
           </Link>
 
           {/* DESKTOP NAVIGATION LINKS (Visible on lg and larger) */}
-          <nav className="hidden lg:flex items-center gap-1 text-xs sm:text-sm font-medium">
+          <nav aria-label="Primary navigation" className="hidden lg:flex items-center gap-1 text-xs sm:text-sm font-medium">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -104,23 +132,26 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
           </nav>
 
           {/* RIGHT SIDE: AUTH / PROFILE + MOBILE MENU TOGGLE */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-self-end">
             {isLoggedIn ? (
               <div className="relative" ref={dropdownRef}>
                 <button
+                  ref={profileTriggerRef}
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsProfileDropdownOpen((prev) => !prev);
                   }}
-                  className="flex items-center gap-2 p-1 rounded-full hover:bg-white/10 transition-all focus:outline-none cursor-pointer group"
+                  className="c2c-tooltip c2c-icon-button group rounded-full"
                   aria-label="User menu"
+                  aria-expanded={isProfileDropdownOpen}
+                  aria-controls="profile-menu"
+                  data-tooltip="User menu"
                 >
                   <div className="relative">
-                    <img
-                      src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb'}
-                      alt={currentUser.fullName || 'User Profile'}
-                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border-2 border-[#A3E635] group-hover:border-[#84CC16] transition-colors shadow-md shadow-[#A3E635]/20"
-                    />
+                    {/* Avatar: initials-based since backend doesn't return avatarUrl */}
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-[#A3E635] group-hover:border-[#84CC16] transition-colors shadow-md shadow-[#A3E635]/20 bg-[#A3E635]/20 flex items-center justify-center">
+                      <span className="text-xs font-bold text-[#A3E635]">{avatarInitials}</span>
+                    </div>
                     <span className="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[#A3E635] rounded-full ring-2 ring-[#090A0C]"></span>
                   </div>
                   <i className={`fa-solid fa-chevron-down text-[10px] text-gray-400 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180 text-[#A3E635]' : ''}`}></i>
@@ -128,19 +159,17 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
 
                 {/* Profile Dropdown */}
                 {isProfileDropdownOpen && (
-                  <div className="absolute right-0 top-full mt-2.5 w-52 bg-[#121316] border border-white/15 rounded-xl shadow-[0_12px_28px_rgba(0,0,0,0.7)] backdrop-blur-md z-50 animate-fade-in flex flex-col p-2 gap-1 font-sans">
+                  <div id="profile-menu" className="absolute right-0 top-full mt-2.5 w-56 bg-(--c2c-surface) border border-(--c2c-border-strong) rounded-xl shadow-(--c2c-shadow-md) backdrop-blur-md z-50 animate-fade-in flex flex-col p-2 gap-1 font-sans">
                     <div className="px-2.5 py-2 bg-[#090A0C] border border-white/10 rounded-lg flex items-center gap-2.5">
-                      <img
-                        src={currentUser?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb'}
-                        alt={currentUser?.fullName || 'User'}
-                        className="w-7 h-7 rounded-full object-cover border border-[#A3E635] shrink-0"
-                      />
+                      <div className="w-7 h-7 rounded-full border border-[#A3E635] bg-[#A3E635]/20 flex items-center justify-center shrink-0">
+                        <span className="text-xs font-bold text-[#A3E635]">{avatarInitials}</span>
+                      </div>
                       <div className="flex flex-col min-w-0">
                         <span className="text-xs font-bold text-white truncate font-heading">
-                          {currentUser?.fullName || 'Alex Developer'}
+                          {displayName || 'User'}
                         </span>
                         <span className="text-[10px] text-gray-400 font-mono truncate">
-                          {currentUser?.email || 'alex.dev@Connect 2 Code.io'}
+                          {displayEmail}
                         </span>
                       </div>
                     </div>
@@ -191,22 +220,25 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
             <button
               type="button"
               onClick={toggleTheme}
-              className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-lg bg-[#090A0C] border border-white/15 hover:border-[#A3E635]/50 text-gray-300 hover:text-white transition-all focus:outline-none cursor-pointer shrink-0 shadow-sm"
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              aria-label="Toggle theme"
+              className="c2c-tooltip c2c-icon-button"
+              data-tooltip={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             >
               <i className={`fa-solid ${theme === 'dark' ? 'fa-sun text-amber-400' : 'fa-moon text-indigo-400'} text-xs`}></i>
-              <span className="text-xs font-bold text-gray-300">
+              <span className="sr-only">
                 {theme === 'dark' ? 'Light' : 'Dark'}
               </span>
             </button>
 
             {/* HAMBURGER TOGGLE BUTTON FOR MOBILE (< lg screens) */}
             <button
+              ref={mobileTriggerRef}
               type="button"
               onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              className="lg:hidden p-2 rounded-lg bg-[#090A0C] border border-white/15 text-gray-300 hover:text-white hover:border-white/30 transition-all focus:outline-none cursor-pointer shrink-0"
+              className="c2c-icon-button lg:hidden"
               aria-label="Toggle navigation menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-navigation"
             >
               <i className={`fa-solid ${isMobileMenuOpen ? 'fa-xmark' : 'fa-bars'} text-sm w-4 text-center`}></i>
             </button>
@@ -217,8 +249,8 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
 
       {/* SLEEK MOBILE NAVIGATION PANEL (Visible when mobile menu is toggled) */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-t border-white/10 light:border-gray-200 bg-[#090A0C]/98 light:bg-white/98 backdrop-blur-xl px-4 py-3 shadow-2xl animate-fade-in font-sans">
-          <nav className="flex flex-col gap-1">
+        <div id="mobile-navigation" className="lg:hidden border-t border-(--c2c-border) bg-(--c2c-surface) backdrop-blur-xl px-4 py-3 shadow-(--c2c-shadow-md) animate-fade-in font-sans">
+          <nav aria-label="Mobile navigation" className="flex flex-col gap-1">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -240,5 +272,31 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
         </div>
       )}
     </header>
+    <nav aria-label="Mobile primary navigation" className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-(--c2c-border) bg-(--c2c-surface)/98 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden">
+      {[
+        { to: '/', label: 'Home', icon: 'fa-solid fa-house' },
+        { to: '/practice', label: 'Practice', icon: 'fa-solid fa-code' },
+        ...(isAdmin
+          ? [{ to: '/admin/practice', label: 'Admin', icon: 'fa-solid fa-shield-halved' }]
+          : []),
+        { to: '/companies', label: 'Companies', icon: 'fa-solid fa-building' },
+        { to: '/roadmaps', label: 'Roadmaps', icon: 'fa-solid fa-map' },
+        ...(!isAdmin
+          ? [{ to: '/dsa-sheet', label: 'DSA Sheet', icon: 'fa-solid fa-list-check' }]
+          : []),
+      ].map((item) => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          className={({ isActive }) => `flex min-h-16 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[10px] font-semibold ${
+            isActive ? 'text-(--c2c-primary)' : 'text-(--c2c-text-muted)'
+          }`}
+        >
+          <i aria-hidden="true" className={`${item.icon} text-sm`} />
+          <span>{item.label}</span>
+        </NavLink>
+      ))}
+    </nav>
+    </>
   );
 };
