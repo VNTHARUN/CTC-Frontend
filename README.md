@@ -1,16 +1,41 @@
-# React + Vite
+# CTC-Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Vite + React frontend for Connect-to-Code. Production auth talks to the Spring Boot API; Vercel rebuilds on every push to `main`.
 
-Currently, two official plugins are available:
+## Local setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
 
-## React Compiler
+## Environment
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Copy `.env.example` to `.env`. Do not commit `.env`.
 
-## Expanding the Oxlint configuration
+On Vercel, set the same keys for Production and Preview:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+| Variable | Purpose |
+|---|---|
+| `VITE_API_BASE_URL` | Backend root, e.g. `https://codingplatform-tdt0.onrender.com/api/v1` |
+| `VITE_USE_MOCK` | `false` when non-auth APIs are live |
+| `VITE_USE_MOCK_AUTH` | `false` to use real login/signup/OAuth |
+
+Redeploy after changing env vars. Vite inlines them at build time.
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Local Vite server |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run build` | Typecheck + production bundle (`dist`) |
+| `npm run preview` | Serve the production bundle |
+
+## Deploy
+
+- Production branch: `main`
+- Framework: Vite
+- Output directory: `dist`
+- SPA fallback: `vercel.json` rewrites all routes to `index.html`
