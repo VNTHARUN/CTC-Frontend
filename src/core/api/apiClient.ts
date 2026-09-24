@@ -39,13 +39,15 @@ const isPublicAuthUrl = (url = ''): boolean =>
   url.includes('/auth/verifyPasswordResetOtp') ||
   url.includes('/oauth2/authorization');
 
+const isRefreshUrl = (url = ''): boolean => url.includes('/refreshToken') || url.includes('/auth/refresh');
+
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = tokenStorage.getToken();
     const url = `${config.baseURL ?? ''}${config.url ?? ''}`;
-    // Public auth calls must not send a leftover JWT — a 401 would trigger
-    // refresh/redirect and wipe the toast the form is trying to show.
-    if (token && config.headers && !isPublicAuthUrl(url)) {
+    if (config.headers && (isPublicAuthUrl(url) || isRefreshUrl(url))) {
+      delete config.headers.Authorization;
+    } else if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -69,7 +71,7 @@ apiClient.interceptors.response.use(
       const isCredentialSubmission = isPublicAuthUrl(url);
       // Session endpoints: a 401 here means the existing session is gone.
       const isSessionEndpoint =
-        url.includes('/auth/refresh') || url.includes('/auth/logout');
+        url.includes('/refreshToken') || url.includes('/auth/refresh') || url.includes('/auth/logout');
 
       if (status === 401 && isCredentialSubmission) {
         return Promise.reject(error.response?.data || {
@@ -84,6 +86,7 @@ apiClient.interceptors.response.use(
         if (isSessionEndpoint) {
           // Session expired — clear tokens and redirect to login
           tokenStorage.clearToken();
+          tokenStorage.clearRefreshToken();
           if (window.location.pathname !== '/login') {
             window.location.href = '/login?expired=true';
           }
@@ -129,6 +132,7 @@ apiClient.interceptors.response.use(
         } catch (refreshError) {
           processQueue(refreshError, null);
           tokenStorage.clearToken();
+          tokenStorage.clearRefreshToken();
           
           // Redirect to login if refresh failed
           if (window.location.pathname !== '/login') {
@@ -162,3 +166,79 @@ apiClient.interceptors.response.use(
     });
   }
 );
+
+const AUTH_REDIRECT_ERROR = {
+  statusCode: 401,
+  message: 'Your session was redirected to login. Sign in again, then retry.',
+  data: null,
+  errors: ['Your session was redirected to login. Sign in again, then retry.'],
+};
+
+function isRedirectResponse(response: Response): boolean {
+  return (
+    response.type === 'opaqueredirect' ||
+    response.status === 301 ||
+    response.status === 302 ||
+    response.status === 303 ||
+    response.status === 307 ||
+    response.status === 308
+  );
+}
+
+async function fetchJsonPost(path: string, body: unknown): Promise<Response> {
+  const token = tokenStorage.getToken();
+  return fetch(`${apiClient.defaults.baseURL}${path}`, {
+    method: 'POST',
+    credentials: 'include',
+    redirect: 'manual',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+/**
+ * POST that does not follow 302s. Axios/XHR will chase Spring Security
+ * redirects to Google OAuth and surface that as a network failure.
+ */
+export async function postJsonWithoutRedirect<T>(path: string, body: unknown): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetchJsonPost(path, body);
+  } catch {
+    throw {
+      success: false,
+      message: 'Unable to reach the server. Please check your connection.',
+    };
+  }
+
+  if (isRedirectResponse(response)) {
+    try {
+      const { authService } = await import('../../services/authService');
+      const newToken = await authService.refreshToken();
+      if (newToken) {
+        response = await fetchJsonPost(path, body);
+      }
+    } catch {
+      throw AUTH_REDIRECT_ERROR;
+    }
+  }
+
+  if (isRedirectResponse(response)) {
+    throw AUTH_REDIRECT_ERROR;
+  }
+
+  const envelope = (await response.json().catch(() => null)) as T | null;
+  if (!response.ok) {
+    throw envelope || {
+      statusCode: response.status,
+      message: `Request failed (${response.status})`,
+      data: null,
+      errors: null,
+    };
+  }
+  return envelope as T;
+}

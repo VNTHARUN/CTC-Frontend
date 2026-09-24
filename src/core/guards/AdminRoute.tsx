@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../app/hooks';
+import { shouldSkipPostLoginReturn } from '../../features/auth/utils/authHome';
 
 const AuthRouteLoading: React.FC = () => (
   <div
@@ -19,7 +20,13 @@ export const AdminRoute: React.FC = () => {
   if (!initialized || loading) return <AuthRouteLoading />;
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return (
+      <Navigate
+        to="/login"
+        state={shouldSkipPostLoginReturn() ? undefined : { from: location }}
+        replace
+      />
+    );
   }
 
   if (user?.role?.toUpperCase() !== 'ADMIN') {

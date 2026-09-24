@@ -94,45 +94,44 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
     <>
     <header className="sticky top-0 z-50 w-full border-b border-(--c2c-border) bg-(--c2c-surface)/95 backdrop-blur-md font-sans">
       <div className="c2c-container">
-        <div className="grid h-16 grid-cols-[1fr_auto] items-center gap-2 lg:grid-cols-[1fr_auto_1fr] lg:gap-6">
-          
-          {/* BRAND LOGO */}
+        <div className="grid h-16 w-full grid-cols-[auto_1fr_auto] items-center gap-3 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4">
           <Link
             to="/"
-            className="inline-flex min-w-0 items-center gap-2 sm:gap-2.5 group transition-opacity hover:opacity-90 justify-self-start"
+            className="inline-flex min-w-0 items-center gap-2 justify-self-start sm:gap-2.5 group transition-opacity hover:opacity-90"
           >
             <img
               src="/logo-mark-transparent.png"
               alt="Connect 2 Code Logo"
-              className="h-7 sm:h-9 w-auto object-contain shrink-0"
+              className="h-7 w-auto shrink-0 object-contain sm:h-9"
             />
-            <span className="truncate text-sm sm:text-lg font-bold text-(--c2c-text) font-sans tracking-tight">
-              Connect <span className="text-[#A3E635]">2</span> Code
+            <span className="truncate font-sans text-sm font-bold tracking-tight text-(--c2c-text) sm:text-lg">
+              Connect <span className="text-(--c2c-primary)">2</span> Code
             </span>
           </Link>
 
-          {/* DESKTOP NAVIGATION LINKS (Visible on lg and larger) */}
-          <nav aria-label="Primary navigation" className="hidden lg:flex items-center gap-1 text-xs sm:text-sm font-medium">
+          <nav
+            aria-label="Primary navigation"
+            className="hidden items-center justify-center rounded-full border border-(--c2c-border) bg-(--c2c-surface-raised)/80 p-1 shadow-(--c2c-shadow-sm) lg:flex"
+          >
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-3.5 py-1.5 font-medium transition-all ${
+                  `inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-colors ${
                     isActive
-                      ? 'bg-white/10 text-white font-semibold border border-white/20 shadow-xs'
-                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      ? 'bg-(--c2c-surface) text-(--c2c-text) shadow-(--c2c-shadow-sm)'
+                      : 'text-(--c2c-text-muted) hover:bg-(--c2c-surface)/70 hover:text-(--c2c-text)'
                   }`
                 }
               >
-                <i className={`${item.icon} text-xs`}></i>
+                <i className={`${item.icon} text-[11px]`}></i>
                 <span>{item.label}</span>
               </NavLink>
             ))}
           </nav>
 
-          {/* RIGHT SIDE: AUTH / PROFILE + MOBILE MENU TOGGLE */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-self-end">
+          <div className="flex shrink-0 items-center justify-self-end gap-1.5 sm:gap-2">
             {isLoggedIn ? (
               <div className="relative" ref={dropdownRef}>
                 <button
@@ -152,7 +151,7 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-[#A3E635] group-hover:border-[#84CC16] transition-colors shadow-md shadow-[#A3E635]/20 bg-[#A3E635]/20 flex items-center justify-center">
                       <span className="text-xs font-bold text-[#A3E635]">{avatarInitials}</span>
                     </div>
-                    <span className="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[#A3E635] rounded-full ring-2 ring-[#090A0C]"></span>
+                    <span className="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[#A3E635] rounded-full ring-2 ring-(--c2c-surface)"></span>
                   </div>
                   <i className={`fa-solid fa-chevron-down text-[10px] text-gray-400 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180 text-[#A3E635]' : ''}`}></i>
                 </button>
@@ -160,15 +159,15 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
                 {/* Profile Dropdown */}
                 {isProfileDropdownOpen && (
                   <div id="profile-menu" className="absolute right-0 top-full mt-2.5 w-56 bg-(--c2c-surface) border border-(--c2c-border-strong) rounded-xl shadow-(--c2c-shadow-md) backdrop-blur-md z-50 animate-fade-in flex flex-col p-2 gap-1 font-sans">
-                    <div className="px-2.5 py-2 bg-[#090A0C] border border-white/10 rounded-lg flex items-center gap-2.5">
+                    <div className="px-2.5 py-2 bg-(--c2c-surface-raised) border border-(--c2c-border) rounded-lg flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-full border border-[#A3E635] bg-[#A3E635]/20 flex items-center justify-center shrink-0">
                         <span className="text-xs font-bold text-[#A3E635]">{avatarInitials}</span>
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-bold text-white truncate font-heading">
+                        <span className="text-xs font-bold text-(--c2c-text) truncate font-heading">
                           {displayName || 'User'}
                         </span>
-                        <span className="text-[10px] text-gray-400 font-mono truncate">
+                        <span className="text-[10px] text-(--c2c-text-subtle) font-mono truncate">
                           {displayEmail}
                         </span>
                       </div>
@@ -178,7 +177,7 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
                       <Link
                         to="/profile"
                         onClick={() => setIsProfileDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-colors font-sans"
+                        className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-(--c2c-text-muted) hover:text-(--c2c-text) hover:bg-(--c2c-surface-raised) transition-colors font-sans"
                       >
                         <i className="fa-regular fa-user text-xs text-[#A3E635] w-4 text-center"></i>
                         <span>Profile Settings</span>
@@ -187,7 +186,7 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
                       <Link
                         to="/bookmarks"
                         onClick={() => setIsProfileDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-colors font-sans"
+                        className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-(--c2c-text-muted) hover:text-(--c2c-text) hover:bg-(--c2c-surface-raised) transition-colors font-sans"
                       >
                         <i className="fa-regular fa-bookmark text-xs text-amber-400 w-4 text-center"></i>
                         <span>My Bookmarks</span>
@@ -209,7 +208,7 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
             ) : (
               <button
                 onClick={() => dispatch(openAuthModal({ mode: 'signup' }))}
-                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#A3E635] hover:bg-[#84CC16] px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-bold text-black shadow-sm transition-all active:translate-y-0.5 cursor-pointer font-sans shrink-0"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#A3E635] hover:bg-[#84CC16] px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-bold text-black shadow-sm transition-all active:translate-y-0.5 cursor-pointer font-sans shrink-0"
               >
                 <i className="fa-solid fa-user-plus text-xs text-black"></i>
                 <span>Sign up</span>
@@ -260,7 +259,7 @@ export const NeetCodeNavbar: React.FC<NeetCodeNavbarProps> = ({
                   `flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all ${
                     isActive
                       ? 'bg-[#A3E635] text-black shadow-sm'
-                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      : 'text-(--c2c-text-muted) hover:bg-(--c2c-surface-raised) hover:text-(--c2c-text)'
                   }`
                 }
               >

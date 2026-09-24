@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-[var(--c2c-surface)] text-[var(--c2c-text-muted)] border-t border-[var(--c2c-border)] font-sans relative overflow-hidden">
+    <footer className="w-full bg-(--c2c-surface) text-(--c2c-text-muted) border-t border-[var(--c2c-border)] font-sans relative overflow-hidden">
       {/* Top subtle glow line */}
       <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-[#A3E635]/50 to-transparent"></div>
 
@@ -21,14 +21,14 @@ export const Footer: React.FC = () => {
                 </svg>
               </span>
               <div className="flex flex-col">
-                <span className="hero-font text-[20px] font-extrabold text-white leading-none">Connect 2 Code</span>
+                <span className="hero-font text-[20px] font-extrabold text-(--c2c-text) leading-none">Connect 2 Code</span>
                 <span className="text-[9.5px] font-black uppercase tracking-[.2em] text-[#A3E635] mt-0.5">
                   YOUR CAREER STARTS HERE
                 </span>
               </div>
             </Link>
 
-            <p className="text-[13.5px] text-[#98A2B3] leading-relaxed max-w-sm font-normal mt-1">
+            <p className="mt-1 max-w-sm text-[13.5px] font-normal leading-relaxed text-(--c2c-text-muted)">
               Empowering engineering students across India to crack campus placement drives with topic-wise lessons, DSA sheets, and company-pattern mocks.
             </p>
 
@@ -75,37 +75,37 @@ export const Footer: React.FC = () => {
 
           {/* Column 2: Placement Prep */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-[13px] font-black uppercase tracking-[.14em] text-white font-heading">
+            <h3 className="font-heading text-[13px] font-black uppercase tracking-[.14em] text-(--c2c-text)">
               Placement Prep
             </h3>
             <ul className="flex flex-col gap-2.5 text-[13.5px]">
               <li>
-                <Link to="/practice" className="hover:text-white transition-colors">
+                <Link to="/practice" className="transition-colors hover:text-(--c2c-text)">
                   Practice Problems
                 </Link>
               </li>
               <li>
-                <Link to="/aptitude" className="hover:text-white transition-colors">
+                <Link to="/aptitude" className="hover:text-(--c2c-text) transition-colors">
                   Aptitude Preparation
                 </Link>
               </li>
               <li>
-                <Link to="/logical" className="hover:text-white transition-colors">
+                <Link to="/logical" className="hover:text-(--c2c-text) transition-colors">
                   Logical Reasoning
                 </Link>
               </li>
               <li>
-                <Link to="/verbal" className="hover:text-white transition-colors">
+                <Link to="/verbal" className="hover:text-(--c2c-text) transition-colors">
                   Verbal Ability
                 </Link>
               </li>
               <li>
-                <Link to="/dsa-sheet" className="hover:text-white transition-colors">
+                <Link to="/dsa-sheet" className="hover:text-(--c2c-text) transition-colors">
                   DSA Striver Sheet
                 </Link>
               </li>
               <li>
-                <Link to="/roadmaps" className="hover:text-white transition-colors">
+                <Link to="/roadmaps" className="hover:text-(--c2c-text) transition-colors">
                   Tech Roadmaps
                 </Link>
               </li>
@@ -114,7 +114,7 @@ export const Footer: React.FC = () => {
 
           {/* Column 3: Company Patterns */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-[13px] font-black uppercase tracking-[.14em] text-white font-heading">
+            <h3 className="font-heading text-[13px] font-black uppercase tracking-[.14em] text-(--c2c-text)">
               Exam Patterns
             </h3>
             <ul className="flex flex-col gap-2.5 text-[13.5px]">
@@ -125,27 +125,27 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/companies" className="hover:text-white transition-colors">
+                <Link to="/companies" className="hover:text-(--c2c-text) transition-colors">
                   Company Guides &amp; PYQs
                 </Link>
               </li>
               <li>
-                <Link to="/company-patterns" className="hover:text-white transition-colors">
+                <Link to="/company-patterns" className="hover:text-(--c2c-text) transition-colors">
                   TCS NQT Pattern
                 </Link>
               </li>
               <li>
-                <Link to="/company-patterns" className="hover:text-white transition-colors">
+                <Link to="/company-patterns" className="hover:text-(--c2c-text) transition-colors">
                   Infosys Specialist Drive
                 </Link>
               </li>
               <li>
-                <Link to="/company-patterns" className="hover:text-white transition-colors">
+                <Link to="/company-patterns" className="hover:text-(--c2c-text) transition-colors">
                   Accenture ASE Pattern
                 </Link>
               </li>
               <li>
-                <Link to="/company-patterns" className="hover:text-white transition-colors">
+                <Link to="/company-patterns" className="hover:text-(--c2c-text) transition-colors">
                   Cognizant &amp; Wipro Mocks
                 </Link>
               </li>
@@ -154,7 +154,7 @@ export const Footer: React.FC = () => {
 
           {/* Column 4: Readiness & Status */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-[13px] font-black uppercase tracking-[.14em] text-white font-heading">
+            <h3 className="font-heading text-[13px] font-black uppercase tracking-[.14em] text-(--c2c-text)">
               Placement Status
             </h3>
 
@@ -163,7 +163,7 @@ export const Footer: React.FC = () => {
               <span className="text-[11.5px] font-bold text-[#A3E635]">Drive Season 2026 Active</span>
             </div>
 
-            <p className="text-[12.5px] text-[#98A2B3] leading-relaxed">
+            <p className="text-[12.5px] text-(--c2c-text-muted) leading-relaxed">
               Find your topic gaps first with structured practice before appearing for real company tests.
             </p>
 
@@ -187,17 +187,17 @@ export const Footer: React.FC = () => {
             © {new Date().getFullYear()} Connect 2 Code — Campus Placement Preparation. All rights reserved.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-[#98A2B3]">
-            <Link to="/company-patterns" className="hover:text-white transition-colors">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-(--c2c-text-muted)">
+            <Link to="/company-patterns" className="hover:text-(--c2c-text) transition-colors">
               Exam Patterns
             </Link>
-            <Link to="/practice" className="hover:text-white transition-colors">
+            <Link to="/practice" className="hover:text-(--c2c-text) transition-colors">
               Practice
             </Link>
-            <Link to="/dsa-sheet" className="hover:text-white transition-colors">
+            <Link to="/dsa-sheet" className="hover:text-(--c2c-text) transition-colors">
               DSA Sheet
             </Link>
-            <Link to="/companies" className="hover:text-white transition-colors">
+            <Link to="/companies" className="hover:text-(--c2c-text) transition-colors">
               Companies
             </Link>
           </div>

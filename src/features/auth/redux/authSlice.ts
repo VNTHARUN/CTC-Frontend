@@ -1,15 +1,15 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import {
   authService,
+  clearClientAuthState,
   LoginPayload,
   RegisterPayload,
   AuthUser,
   authUserStorage,
-  cookieStorage,
 } from '../../../services/authService';
 import { tokenStorage } from '../../../core/security/tokenStorage';
 import { toAuthFeedback, type AuthFeedback } from '../utils/authToasts';
-import { resolveRefreshToken } from '../utils/refreshTokenSource';
+import { markExplicitLogout } from '../utils/authHome';
 import { OAUTH_PENDING_KEY } from '../utils/googleOAuth';
 
 // ─── State Shape ──────────────────────────────────────────────────────────────
@@ -75,11 +75,14 @@ export const registerUser = createAsyncThunk(
 export const logoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
+    markExplicitLogout();
     try {
       const res = await authService.logout();
       return { message: res.message };
     } catch (err: unknown) {
       return rejectWithValue(toAuthFeedback(err));
+    } finally {
+      clearClientAuthState();
     }
   }
 );
@@ -98,30 +101,11 @@ export const initializeAuth = createAsyncThunk(
     try {
       const existingToken = tokenStorage.getToken();
       const existingUser = authUserStorage.getUser();
-      const refreshToken = resolveRefreshToken(tokenStorage.getRefreshToken());
-
       if (existingToken && existingUser && !oauthReturn) {
         return { token: existingToken, user: existingUser, message: null, oauthReturn: false };
       }
 
-      if (!refreshToken) {
-        if (existingToken && existingUser && !oauthReturn) {
-          return { token: existingToken, user: existingUser, message: null, oauthReturn: false };
-        }
-        if (oauthReturn) {
-          const session = await authService.refreshSession('', { allowEmptyBody: true });
-          return {
-            token: session.token,
-            user: session.user,
-            message: session.message,
-            oauthReturn: true,
-          };
-        }
-        return rejectWithValue('No session');
-      }
-
-      tokenStorage.setRefreshToken(refreshToken);
-      const session = await authService.refreshSession(refreshToken);
+      const session = await authService.refreshSession();
       return {
         token: session.token,
         user: session.user,
@@ -129,10 +113,7 @@ export const initializeAuth = createAsyncThunk(
         oauthReturn,
       };
     } catch (err: unknown) {
-      tokenStorage.clearToken();
-      tokenStorage.clearRefreshToken();
-      cookieStorage.clearRefreshToken();
-      authUserStorage.clearUser();
+      clearClientAuthState();
       if (oauthReturn) {
         return rejectWithValue(toAuthFeedback(err));
       }

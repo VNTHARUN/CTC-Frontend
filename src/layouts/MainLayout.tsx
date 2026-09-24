@@ -7,6 +7,7 @@ import { Footer } from '../shared/components/ui/Footer';
 import { Login } from '../features/auth/pages/Login';
 import { OAuthReturnHandler } from '../features/auth/components/OAuthReturnHandler';
 import { toastAuthFeedback, toAuthFeedback } from '../features/auth/utils/authToasts';
+import { resetIdleDocumentScrollLock } from '../shared/hooks/useScrollLock';
 
 export const MainLayout: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -15,7 +16,9 @@ export const MainLayout: React.FC = () => {
 
   const { user, isAuthModalOpen, isAuthenticated, initialized, loading } = useAppSelector((state) => state.auth);
   const isAuthRoute = location.pathname === '/login' || location.pathname === '/signup';
-  const showModal = isAuthModalOpen || isAuthRoute;
+  // Auth routes already render Login in the outlet. Mounting it again here
+  // stacked two document scroll locks and left overflow:hidden on later pages.
+  const showAuthOverlay = isAuthModalOpen && !isAuthRoute;
 
   // If user logs out, redirect to login
   useEffect(() => {
@@ -27,7 +30,7 @@ export const MainLayout: React.FC = () => {
       location.pathname !== '/dsa-sheet' &&
       location.pathname !== '/'
     ) {
-      navigate('/login', { replace: true });
+      navigate('/login', { replace: true, state: {} });
     }
   }, [initialized, isAuthenticated, isAuthRoute, loading, location.pathname, navigate]);
 
@@ -38,8 +41,14 @@ export const MainLayout: React.FC = () => {
     } else {
       toastAuthFeedback(toAuthFeedback(res.payload), 'error');
     }
-    navigate('/login', { replace: true });
+    navigate('/login', { replace: true, state: {} });
   };
+
+  useEffect(() => {
+    if (!showAuthOverlay) {
+      resetIdleDocumentScrollLock();
+    }
+  }, [showAuthOverlay, location.pathname]);
 
   const handleCloseModal = () => {
     dispatch(closeAuthModal());
@@ -49,7 +58,7 @@ export const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="c2c-has-bottom-nav min-h-screen bg-(--c2c-bg) text-(--c2c-text) flex flex-col font-sans relative">
+    <div className="c2c-app-shell c2c-has-bottom-nav min-h-screen text-(--c2c-text) flex flex-col font-sans relative">
       <a href="#main-content" className="sr-only z-100 rounded-lg bg-(--c2c-primary) px-4 py-2 text-(--c2c-primary-foreground) focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
         Skip to main content
       </a>
@@ -66,7 +75,7 @@ export const MainLayout: React.FC = () => {
       <Footer />
 
       {/* Global Floating Auth Modal Overlay */}
-      {showModal && (
+      {showAuthOverlay && (
         <Login onCloseModal={handleCloseModal} />
       )}
     </div>

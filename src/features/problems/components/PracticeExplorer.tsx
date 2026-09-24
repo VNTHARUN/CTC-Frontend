@@ -1,20 +1,21 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
   Bookmark,
   Check,
+  ChevronDown,
   ChevronRight,
   CirclePlus,
+  Code2,
   Edit3,
-  FilterX,
   RefreshCw,
   Search,
   Trash2,
-  X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import problemsData from '../../../mock/data/problems.json';
+import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+import { buildQuestionSearchPayload, getPracticeApiErrorMessage } from '../../../services/practiceService';
 import { Badge } from '../../../shared/components/ui/Badge';
 import { Button } from '../../../shared/components/ui/Button';
 import { EmptyState } from '../../../shared/components/ui/EmptyState';
@@ -24,6 +25,7 @@ import { Pagination } from '../../../shared/components/ui/Pagination';
 import { Skeleton } from '../../../shared/components/ui/Skeleton';
 import {
   PracticeDifficulty,
+  PracticeFilterOption,
   PracticeQuestion,
   PracticeQuestionDraft,
   PracticeRole,
@@ -31,115 +33,177 @@ import {
   PracticeStatus,
 } from '../practiceTypes';
 import {
-  PracticeCompanyFilter,
-  PracticeFilterSelect,
-} from './PracticeFilterDropdown';
+  fetchPracticeCompanies,
+  fetchPracticeDifficulties,
+  fetchPracticeQpf,
+  fetchPracticeTopics,
+  getPracticeOptionLabel,
+  searchPracticeQuestions,
+} from '../redux/practiceSlice';
+import { AdminQuestionWorkspace } from './AdminQuestionWorkspace';
+import { PracticeFilterBar } from './PracticeFilterBar';
 import { PracticeQuestionForm } from './PracticeQuestionForm';
 
 interface PracticeExplorerProps {
   role: PracticeRole;
 }
 
-const STORAGE_KEY = 'c2c_practice_admin_questions';
 const PAGE_SIZE = 8;
-const allQuestions = problemsData as PracticeQuestion[];
-
-const searchClassName =
-  'min-h-12 w-full rounded-xl border border-[var(--c2c-border)] bg-[var(--c2c-surface-raised)]/60 pl-10 pr-4 text-sm text-[var(--c2c-text)] outline-none transition-all placeholder:text-[var(--c2c-text-subtle)] hover:border-[var(--c2c-border-strong)] focus:border-violet-500/55 focus:bg-violet-500/5 focus:ring-2 focus:ring-violet-500/15';
-
-const getMockSubmissions = (question: PracticeQuestion) => {
-  const numericId = Number(question.id.replace(/\D/g, '')) || question.title.length;
-  return 700 + ((numericId * 947) % 18400);
-};
 
 const getNewestRank = (question: PracticeQuestion) => {
-  if (question.id.startsWith('local-')) return Number(question.id.replace('local-', ''));
-  return Number(question.id.replace(/\D/g, '')) || 0;
+  const numericId = Number(String(question.id).replace(/\D/g, ''));
+  return Number.isFinite(numericId) ? numericId : 0;
 };
-
-const formatNumber = (value: number) =>
-  new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
 
 const difficultyVariant = (difficulty: PracticeDifficulty) =>
   difficulty.toLowerCase() as 'easy' | 'medium' | 'hard';
 
+const withSelectedOption = (
+  options: PracticeFilterOption[],
+  selectedId: string,
+  selectedLabel: string
+): PracticeFilterOption[] => {
+  if (!selectedId || options.some((option) => option.value === selectedId)) return options;
+  return [...options, { value: selectedId, label: selectedLabel }];
+};
+
 export const PracticeExplorer: React.FC<PracticeExplorerProps> = ({ role }) => {
   const isAdmin = role === 'ADMIN';
+  const dispatch = useAppDispatch();
+  const {
+    topicOptions,
+    difficultyOptions,
+    companyOptions,
+    qpfOptions,
+    optionLabels,
+    dropdownLoading,
+    searching,
+  } = useAppSelector((state) => state.practice);
   const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
-  const [topic, setTopic] = useState('All');
-  const [difficulty, setDifficulty] = useState('All');
-  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+  const [selectedTopicId, setSelectedTopicId] = useState('');
+  const [selectedDifficultyId, setSelectedDifficultyId] = useState('');
+  const [selectedCompanyIds, setSelectedCompanyIds] = useState<string[]>([]);
+  const [selectedQpfId, setSelectedQpfId] = useState('');
   const [status, setStatus] = useState<PracticeStatus>('All');
   const [sort, setSort] = useState<PracticeSort>('submissions');
   const [page, setPage] = useState(1);
   const [editingQuestion, setEditingQuestion] = useState<PracticeQuestion | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [questionToDelete, setQuestionToDelete] = useState<PracticeQuestion | null>(null);
+  const [expandedCompanyRows, setExpandedCompanyRows] = useState<Set<string>>(() => new Set());
   const [isDeleting, setIsDeleting] = useState(false);
+  const requestInFlightRef = useRef(false);
 
-  const loadQuestions = () => {
-    setLoading(true);
-    setLoadError('');
-    window.setTimeout(() => {
+  const currentSearchPayload = useCallback(
+    () =>
+      buildQuestionSearchPayload({
+        topicId: selectedTopicId,
+        difficultyId: selectedDifficultyId,
+        companyIds: selectedCompanyIds,
+        searchText: search,
+      }),
+    [search, selectedCompanyIds, selectedDifficultyId, selectedTopicId]
+  );
+
+  const fetchQuestions = useCallback(
+    async (payload = buildQuestionSearchPayload(), replaceOnError = false) => {
+      if (requestInFlightRef.current) return false;
+      requestInFlightRef.current = true;
+      setLoading(true);
+      setLoadError('');
       try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        setQuestions(saved ? (JSON.parse(saved) as PracticeQuestion[]) : allQuestions);
-      } catch {
-        setLoadError('The local question preview could not be loaded.');
+        const nextQuestions = await dispatch(searchPracticeQuestions(payload)).unwrap();
+        setQuestions(nextQuestions);
+        setPage(1);
+        return true;
+      } catch (error) {
+        const message = getPracticeApiErrorMessage(error, 'Failed to load questions');
+        toast.error(message);
+        if (replaceOnError) {
+          setQuestions([]);
+          setLoadError(message);
+        }
+        return false;
       } finally {
+        requestInFlightRef.current = false;
         setLoading(false);
       }
-    }, 350);
-  };
+    },
+    [dispatch]
+  );
 
   useEffect(() => {
-    loadQuestions();
-  }, []);
+    void fetchQuestions(buildQuestionSearchPayload(), true);
+  }, [fetchQuestions]);
 
-  const topics = useMemo(
-    () => ['All', ...Array.from(new Set(questions.map((question) => question.topic))).sort()],
-    [questions]
+  const topicSelectOptions = useMemo(
+    () => [
+      { value: '', label: 'All topics' },
+      ...withSelectedOption(
+        topicOptions,
+        selectedTopicId,
+        getPracticeOptionLabel(optionLabels, 'topic', selectedTopicId, 'Selected topic')
+      ),
+    ],
+    [optionLabels, selectedTopicId, topicOptions]
   );
-  const companies = useMemo(
-    () => Array.from(new Set(questions.flatMap((question) => question.companies))).sort(),
-    [questions]
+  const difficultySelectOptions = useMemo(
+    () => [
+      { value: '', label: 'All difficulties' },
+      ...withSelectedOption(
+        difficultyOptions,
+        selectedDifficultyId,
+        getPracticeOptionLabel(optionLabels, 'difficulty', selectedDifficultyId, 'Selected difficulty')
+      ),
+    ],
+    [difficultyOptions, optionLabels, selectedDifficultyId]
   );
+  const qpfSelectOptions = useMemo(
+    () => [
+      { value: '', label: 'All QPF' },
+      ...withSelectedOption(
+        qpfOptions,
+        selectedQpfId,
+        getPracticeOptionLabel(optionLabels, 'qpf', selectedQpfId, 'Selected QPF')
+      ),
+    ],
+    [optionLabels, qpfOptions, selectedQpfId]
+  );
+  const companyLabelById = useMemo(() => {
+    const labels: Record<string, string> = {};
+    selectedCompanyIds.forEach((companyId) => {
+      labels[companyId] = getPracticeOptionLabel(optionLabels, 'company', companyId);
+    });
+    companyOptions.forEach((option) => {
+      labels[option.value] = option.label;
+    });
+    return labels;
+  }, [companyOptions, optionLabels, selectedCompanyIds]);
 
   const filteredQuestions = useMemo(() => {
-    const query = search.trim().toLowerCase();
     const filtered = questions.filter((question) => {
-      const matchesSearch =
-        !query ||
-        question.title.toLowerCase().includes(query) ||
-        question.topic.toLowerCase().includes(query) ||
-        question.companies.some((item) => item.toLowerCase().includes(query));
-      const matchesTopic = topic === 'All' || question.topic === topic;
-      const matchesDifficulty = difficulty === 'All' || question.difficulty === difficulty;
-      // Multiple companies use OR matching: a question can match any selected company.
-      const matchesCompany =
-        selectedCompanies.length === 0 ||
-        selectedCompanies.some((selectedCompany) => question.companies.includes(selectedCompany));
       const matchesStatus =
         status === 'All' ||
         (status === 'Solved' && question.isSolved) ||
         (status === 'Unsolved' && !question.isSolved) ||
         (status === 'Bookmarked' && question.isBookmarked);
-      return matchesSearch && matchesTopic && matchesDifficulty && matchesCompany && matchesStatus;
+      return matchesStatus;
     });
 
     return filtered.sort((a, b) => {
       if (sort === 'title') return a.title.localeCompare(b.title);
       if (sort === 'newest') return getNewestRank(b) - getNewestRank(a);
-      return getMockSubmissions(b) - getMockSubmissions(a);
+      return Number(b.id) - Number(a.id) || b.title.localeCompare(a.title);
     });
-  }, [difficulty, questions, search, selectedCompanies, sort, status, topic]);
+  }, [questions, sort, status]);
 
   useEffect(() => {
     setPage(1);
-  }, [difficulty, search, selectedCompanies, sort, status, topic]);
+  }, [search, sort, status]);
 
   const totalPages = Math.max(1, Math.ceil(filteredQuestions.length / PAGE_SIZE));
   const visibleQuestions = filteredQuestions.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -147,18 +211,32 @@ export const PracticeExplorer: React.FC<PracticeExplorerProps> = ({ role }) => {
     ...(search
       ? [{ id: 'search', label: `Search: ${search}`, remove: () => setSearch('') }]
       : []),
-    ...(topic !== 'All'
-      ? [{ id: 'topic', label: `Topic: ${topic}`, remove: () => setTopic('All') }]
+    ...(selectedTopicId
+      ? [{
+          id: 'topic',
+          label: `Topic: ${getPracticeOptionLabel(optionLabels, 'topic', selectedTopicId)}`,
+          remove: () => setSelectedTopicId(''),
+        }]
       : []),
-    ...(difficulty !== 'All'
-      ? [{ id: 'difficulty', label: `Difficulty: ${difficulty}`, remove: () => setDifficulty('All') }]
+    ...(selectedDifficultyId
+      ? [{
+          id: 'difficulty',
+          label: `Difficulty: ${getPracticeOptionLabel(optionLabels, 'difficulty', selectedDifficultyId)}`,
+          remove: () => setSelectedDifficultyId(''),
+        }]
       : []),
-    ...selectedCompanies.map((selectedCompany) => ({
-      id: `company-${selectedCompany}`,
-      label: `Company: ${selectedCompany}`,
-      remove: () =>
-        setSelectedCompanies((current) => current.filter((item) => item !== selectedCompany)),
+    ...selectedCompanyIds.map((companyId) => ({
+      id: `company-${companyId}`,
+      label: `Company: ${companyLabelById[companyId] || companyId}`,
+      remove: () => setSelectedCompanyIds((current) => current.filter((item) => item !== companyId)),
     })),
+    ...(selectedQpfId
+      ? [{
+          id: 'qpf',
+          label: `QPF: ${getPracticeOptionLabel(optionLabels, 'qpf', selectedQpfId)}`,
+          remove: () => setSelectedQpfId(''),
+        }]
+      : []),
     ...(status !== 'All'
       ? [{ id: 'status', label: `Status: ${status}`, remove: () => setStatus('All') }]
       : []),
@@ -166,23 +244,38 @@ export const PracticeExplorer: React.FC<PracticeExplorerProps> = ({ role }) => {
 
   const clearFilters = () => {
     setSearch('');
-    setTopic('All');
-    setDifficulty('All');
-    setSelectedCompanies([]);
+    setSelectedTopicId('');
+    setSelectedDifficultyId('');
+    setSelectedCompanyIds([]);
+    setSelectedQpfId('');
     setStatus('All');
+    void fetchQuestions(buildQuestionSearchPayload());
   };
 
-  const toggleCompany = (selectedCompany: string) => {
-    setSelectedCompanies((current) =>
-      current.includes(selectedCompany)
-        ? current.filter((item) => item !== selectedCompany)
-        : [...current, selectedCompany]
-    );
+  const toastFilterError = (error: unknown, fallback: string) => {
+    toast.error(typeof error === 'string' && error.trim() ? error : fallback);
   };
+
+  const loadTopicOptions = () => {
+    void dispatch(fetchPracticeTopics()).unwrap().catch((error) => toastFilterError(error, 'Failed to load topics'));
+  };
+  const loadDifficultyOptions = () => {
+    void dispatch(fetchPracticeDifficulties()).unwrap().catch((error) => toastFilterError(error, 'Failed to load difficulties'));
+  };
+  const loadCompanyOptions = () => {
+    void dispatch(fetchPracticeCompanies()).unwrap().catch((error) => toastFilterError(error, 'Failed to load companies'));
+  };
+  const loadQpfOptions = () => {
+    void dispatch(fetchPracticeQpf()).unwrap().catch((error) => toastFilterError(error, 'Failed to load QPF options'));
+  };
+
+  const handleViewResults = useCallback(async () => {
+    if (searching || loading) return false;
+    return fetchQuestions(currentSearchPayload());
+  }, [currentSearchPayload, fetchQuestions, loading, searching]);
 
   const persistQuestions = (nextQuestions: PracticeQuestion[]) => {
     setQuestions(nextQuestions);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextQuestions));
   };
 
   const handleSave = async (draft: PracticeQuestionDraft) => {
@@ -244,35 +337,41 @@ export const PracticeExplorer: React.FC<PracticeExplorerProps> = ({ role }) => {
     );
   };
 
+  const toggleCompanyRow = (questionId: string) => {
+    setExpandedCompanyRows((current) => {
+      const next = new Set(current);
+      if (next.has(questionId)) next.delete(questionId);
+      else next.add(questionId);
+      return next;
+    });
+  };
+
   return (
     <main className="c2c-page font-sans">
-      <PageContainer className="max-w-[max-w-360]">
-        <header className="relative overflow-hidden rounded-2xl border border-(--c2c-border) bg-(--c2c-surface) px-5 py-7 shadow-(--c2c-shadow-sm) sm:px-8 sm:py-9">
+      <PageContainer>
+        <header className="relative overflow-hidden rounded-2xl border border-(--c2c-border) bg-(--c2c-surface) px-5 py-6 shadow-(--c2c-shadow-sm) sm:px-8 sm:py-7">
           <div className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full bg-violet-500/10 blur-3xl" />
-          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+          <div className="relative flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
             <div className="max-w-3xl">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span className="rounded-full border border-violet-500/25 bg-violet-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-violet-300 light:text-violet-700">
                   {isAdmin ? 'Admin workspace' : 'Explore & practice'}
                 </span>
-                <span className="text-xs text-(--c2c-text-subtle)">Frontend preview · local data</span>
+                <span className="text-xs text-(--c2c-text-subtle)">Press F for filters · / to search</span>
               </div>
               <h1 className="text-3xl font-bold tracking-tight text-(--c2c-text) sm:text-4xl">
                 {isAdmin ? 'Manage practice questions' : 'Practice questions'}
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text---c2c-text-muted) sm:text-base">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-(--c2c-text-muted) sm:text-base">
                 {isAdmin
-                  ? 'Create, review, and organize the question collection before backend integration.'
-                  : 'Search the collection, focus by topic or company, and keep your interview preparation moving.'}
+                  ? 'Create, review, and organize the question collection. Open filters in this card when you need them.'
+                  : 'Search quickly, then open filters in this card only when you need to narrow the set.'}
               </p>
             </div>
             <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
               {isAdmin && (
                 <Button
-                  onClick={() => {
-                    setEditingQuestion(null);
-                    setIsFormOpen(true);
-                  }}
+                  onClick={() => setIsComposerOpen(true)}
                   leftIcon={<CirclePlus className="h-4 w-4" />}
                   className="border-violet-500 bg-violet-600 text-white hover:bg-violet-500"
                 >
@@ -283,120 +382,55 @@ export const PracticeExplorer: React.FC<PracticeExplorerProps> = ({ role }) => {
           </div>
         </header>
 
-        <section
-          aria-label="Question filters"
-          className="mt-5 rounded-2xl border border-(--c2c-border) bg-(--c2c-surface) p-4 shadow-(--c2c-shadow-sm) sm:p-5"
-        >
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-            <div>
-              <h2 className="text-sm font-bold text-(--c2c-text)">Find the right question</h2>
-              <p className="mt-0.5 text-xs text-(--c2c-text-subtle)">
-                Combine filters to narrow the collection.
-              </p>
-            </div>
-            <span className="rounded-full bg-(--c2c-surface-raised) px-2.5 py-1 text-xs font-semibold text-(--c2c-text-muted)">
-              {filteredQuestions.length} results
-            </span>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[minmax(18rem,1.5fr)_repeat(5,minmax(9rem,1fr))]">
-            <div className="relative sm:col-span-2 lg:col-span-1">
-              <label htmlFor="question-search" className="sr-only">
-                Search questions, topics, or companies
-              </label>
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-(--c2c-text-subtle)" />
-              <input
-                id="question-search"
-                type="search"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search questions, topics, companies"
-                className={searchClassName}
-              />
-            </div>
-            <PracticeFilterSelect
-              label="Topic"
-              value={topic}
-              onChange={setTopic}
-              options={topics.map((item) => ({
-                value: item,
-                label: item === 'All' ? 'All topics' : item,
-              }))}
-            />
-            <PracticeFilterSelect
-              label="Difficulty"
-              value={difficulty}
-              onChange={setDifficulty}
-              options={[
-                { value: 'All', label: 'All difficulties' },
-                { value: 'Easy', label: 'Easy' },
-                { value: 'Medium', label: 'Medium' },
-                { value: 'Hard', label: 'Hard' },
-              ]}
-            />
-            <PracticeCompanyFilter
-              options={companies}
-              selectedValues={selectedCompanies}
-              onToggle={toggleCompany}
-              onClear={() => setSelectedCompanies([])}
-            />
-            <PracticeFilterSelect
-              label="Status"
-              value={status}
-              onChange={(value) => setStatus(value as PracticeStatus)}
-              options={[
-                { value: 'All', label: 'All statuses' },
-                { value: 'Solved', label: 'Solved' },
-                { value: 'Unsolved', label: 'Unsolved' },
-                { value: 'Bookmarked', label: 'Bookmarked' },
-              ]}
-            />
-            <PracticeFilterSelect
-              label="Sort by"
-              value={sort}
-              onChange={(value) => setSort(value as PracticeSort)}
-              options={[
-                { value: 'submissions', label: 'Most submissions' },
-                { value: 'newest', label: 'Newest first' },
-                { value: 'title', label: 'Title A–Z' },
-              ]}
-            />
-          </div>
-
-          <div className="mt-3 flex min-h-8 flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-(--c2c-text-subtle)">
-              {activeFilters.length === 0 ? 'No active filters' : 'Active filters'}
-            </span>
-            {activeFilters.map((filter) => (
-              <button
-                key={filter.id}
-                type="button"
-                onClick={filter.remove}
-                aria-label={`Remove ${filter.label} filter`}
-                className="inline-flex min-h-7 items-center gap-1.5 rounded-full border border-violet-500/25 bg-violet-500/10 px-2.5 py-1 text-[11px] font-medium text-violet-300 transition-colors hover:border-violet-400/50 hover:bg-violet-500/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--c2c-primary) light:text-violet-700"
-              >
-                <span className="max-w-52 truncate">{filter.label}</span>
-                <X className="h-3 w-3" aria-hidden="true" />
-              </button>
-            ))}
-            {activeFilters.length > 0 && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="ml-auto inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-(--c2c-text-muted) hover:bg-(--c2c-surface-raised) hover:text-(--c2c-text) focus-visible:outline-2 focus-visible:outline-(--c2c-primary)"
-              >
-                <FilterX className="h-3.5 w-3.5" />
-                Clear all
-              </button>
-            )}
-          </div>
-        </section>
+        <PracticeFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          sort={sort}
+          onSortChange={setSort}
+          status={status}
+          onStatusChange={setStatus}
+          selectedTopicId={selectedTopicId}
+          onTopicChange={setSelectedTopicId}
+          topicOptions={topicSelectOptions}
+          onTopicOpen={loadTopicOptions}
+          topicLoading={dropdownLoading.topic}
+          selectedDifficultyId={selectedDifficultyId}
+          onDifficultyChange={setSelectedDifficultyId}
+          difficultyOptions={difficultySelectOptions}
+          onDifficultyOpen={loadDifficultyOptions}
+          difficultyLoading={dropdownLoading.difficulty}
+          selectedCompanyIds={selectedCompanyIds}
+          companyOptions={companyOptions}
+          companyLabels={companyLabelById}
+          onCompanyToggle={(companyId) =>
+            setSelectedCompanyIds((current) =>
+              current.includes(companyId)
+                ? current.filter((item) => item !== companyId)
+                : [...current, companyId]
+            )
+          }
+          onCompanyClear={() => setSelectedCompanyIds([])}
+          onCompanyOpen={loadCompanyOptions}
+          companyLoading={dropdownLoading.company}
+          selectedQpfId={selectedQpfId}
+          onQpfChange={setSelectedQpfId}
+          qpfOptions={qpfSelectOptions}
+          onQpfOpen={loadQpfOptions}
+          qpfLoading={dropdownLoading.qpf}
+          activeFilters={activeFilters}
+          resultCount={filteredQuestions.length}
+          isSearching={searching}
+          isBusy={loading}
+          onClearFilters={clearFilters}
+          onViewResults={handleViewResults}
+        />
 
         <section aria-label="Question list" className="mt-5">
           {loading ? (
             <div className="c2c-card space-y-3 p-4" role="status" aria-label="Loading questions">
               <div className="flex items-center gap-2 text-sm text-(--c2c-text-muted)">
                 <span className="c2c-spinner h-4 w-4" aria-hidden="true" />
-                Loading local question preview…
+                Loading questions…
               </div>
               <Skeleton className="h-24 w-full rounded-xl" count={6} />
             </div>
@@ -405,34 +439,40 @@ export const PracticeExplorer: React.FC<PracticeExplorerProps> = ({ role }) => {
               <AlertTriangle className="h-9 w-9 text-rose-400" />
               <h2 className="mt-4 text-lg font-bold text-(--c2c-text)">Could not load questions</h2>
               <p className="mt-1 text-sm text-(--c2c-text-muted)">{loadError}</p>
-              <Button className="mt-5" variant="secondary" onClick={loadQuestions} leftIcon={<RefreshCw className="h-4 w-4" />}>
+              <Button
+                className="mt-5"
+                variant="secondary"
+                onClick={() => void fetchQuestions(currentSearchPayload(), true)}
+                leftIcon={<RefreshCw className="h-4 w-4" />}
+              >
                 Try again
               </Button>
             </div>
           ) : visibleQuestions.length === 0 ? (
             <EmptyState
-              title="No questions match these filters"
-              description="Clear one or more filters, or try a broader search."
-              actionText="Clear all filters"
-              onAction={clearFilters}
+              title={activeFilters.length > 0 ? 'No questions match these filters' : 'No questions found'}
+              description={
+                activeFilters.length > 0
+                  ? 'Clear one or more filters, then view results again.'
+                  : 'Questions from the server will appear here once they are available.'
+              }
+              actionText={activeFilters.length > 0 ? 'Clear all filters' : undefined}
+              onAction={activeFilters.length > 0 ? clearFilters : undefined}
               icon={<Search className="h-7 w-7 text-(--c2c-primary)" />}
             />
           ) : (
             <div className="overflow-hidden rounded-2xl border border-(--c2c-border) bg-(--c2c-surface) shadow-(--c2c-shadow-sm)">
-              <div className={`hidden border-b border-(--c2c-border) bg-(--c2c-surface-raised) px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-(--c2c-text-subtle) lg:grid ${
-                isAdmin ? 'grid-cols-[minmax(22rem,2fr)_9rem_10rem_10rem_7rem]' : 'grid-cols-[minmax(22rem,2fr)_9rem_10rem_10rem_7rem]'
-              }`}>
-                <span>Question</span>
-                <span>Difficulty</span>
-                <span>Company</span>
-                <span>Metadata</span>
-                <span className="text-right">{isAdmin ? 'Actions' : 'Open'}</span>
+              <div className="hidden grid-cols-[minmax(0,2.2fr)_8rem_minmax(11rem,1fr)_7rem] items-center gap-x-4 border-b border-(--c2c-border) bg-(--c2c-surface-raised) px-5 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-(--c2c-text-subtle) lg:grid">
+                <span className="justify-self-start">Question</span>
+                <span className="justify-self-start">Difficulty</span>
+                <span className="justify-self-start">Companies</span>
+                <span className="justify-self-start">{isAdmin ? 'Actions' : 'Open'}</span>
               </div>
 
               {visibleQuestions.map((question) => (
                 <article
                   key={question.id}
-                  className={`group grid gap-3 border-b border-(--c2c-border) p-4 transition-colors last:border-b-0 hover:bg-(--c2c-surface-raised) lg:grid-cols-[minmax(22rem,2fr)_9rem_10rem_10rem_7rem] lg:items-center lg:px-5 ${
+                  className={`group grid gap-x-4 gap-y-3 border-b border-(--c2c-border) p-4 transition-colors last:border-b-0 hover:bg-(--c2c-surface-raised) lg:grid-cols-[minmax(0,2.2fr)_8rem_minmax(11rem,1fr)_7rem] lg:items-center lg:px-5 ${
                     question.isSolved ? 'border-l-2 border-l-(--c2c-success)' : ''
                   }`}
                 >
@@ -444,7 +484,7 @@ export const PracticeExplorer: React.FC<PracticeExplorerProps> = ({ role }) => {
                         className={`c2c-tooltip mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--c2c-primary) ${
                           question.isSolved
                             ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-400'
-                            : 'border-(--c2c-border) text-c2c-text-subtle) hover:border-emerald-500/40 hover:text-emerald-400'
+                            : 'border-(--c2c-border) text-(--c2c-text-subtle) hover:border-emerald-500/40 hover:text-emerald-400'
                         }`}
                         aria-label={question.isSolved ? `Mark ${question.title} unsolved` : `Mark ${question.title} solved`}
                         aria-pressed={question.isSolved}
@@ -455,7 +495,7 @@ export const PracticeExplorer: React.FC<PracticeExplorerProps> = ({ role }) => {
                     )}
                     <div className="min-w-0">
                       <Link
-                        to={`/problems/${question.slug}`}
+                        to={isAdmin ? `/admin/practice/${question.id}` : `/practice/${question.id}`}
                         className="font-semibold leading-6 text-(--c2c-text) transition-colors hover:text-(--c2c-primary) focus-visible:rounded focus-visible:outline-2 focus-visible:outline-(--c2c-primary)"
                       >
                         {question.title}
@@ -468,33 +508,56 @@ export const PracticeExplorer: React.FC<PracticeExplorerProps> = ({ role }) => {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="flex items-center lg:justify-self-start">
                     <span className="mr-2 text-[11px] uppercase text-(--c2c-text-subtle) lg:hidden">Difficulty</span>
                     <Badge variant={difficultyVariant(question.difficulty)}>{question.difficulty}</Badge>
                   </div>
 
-                  <div className="flex flex-wrap gap-1">
-                    {question.companies.slice(0, 2).map((item) => (
-                      <Badge key={item} size="sm" variant="neutral">{item}</Badge>
-                    ))}
-                    {question.companies.length > 2 && <Badge size="sm" variant="neutral">+{question.companies.length - 2}</Badge>}
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="mr-1 text-[11px] uppercase text-(--c2c-text-subtle) lg:hidden">Companies</span>
+                    {question.companies.length > 0 ? (
+                      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                        {question.companies.slice(0, expandedCompanyRows.has(question.id) ? question.companies.length : 2).map((item) => (
+                          <span key={item} title={item} className="inline-flex max-w-36 items-center truncate rounded-md border border-(--c2c-border) bg-(--c2c-surface-raised) px-2 py-1 text-[11px] font-medium text-(--c2c-text-muted)">
+                            {item}
+                          </span>
+                        ))}
+                        {question.companies.length > 2 && (
+                          <button
+                            type="button"
+                            onClick={() => toggleCompanyRow(question.id)}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-(--c2c-border) bg-(--c2c-surface-raised) text-(--c2c-text-subtle) transition-colors hover:border-(--c2c-border-strong) hover:bg-(--c2c-surface-hover) hover:text-(--c2c-text)"
+                            aria-label={expandedCompanyRows.has(question.id) ? `Collapse companies for ${question.title}` : `Show all companies for ${question.title}`}
+                            aria-expanded={expandedCompanyRows.has(question.id)}
+                            title={expandedCompanyRows.has(question.id) ? 'Collapse companies' : 'Show all companies'}
+                          >
+                            <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${expandedCompanyRows.has(question.id) ? 'rotate-180' : ''}`} />
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-(--c2c-text-subtle)">Not specified</span>
+                    )}
                   </div>
 
-                  <div className="text-xs text-(--c2c-text-muted)">
-                    <p>{formatNumber(getMockSubmissions(question))} submissions</p>
-                    <p className="mt-1 text-(--c2c-text-subtle)">{question.acceptanceRate} accepted</p>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-1">
+                  <div className="flex items-center justify-self-start">
                     {isAdmin ? (
-                      <>
+                      <div className="inline-flex items-center gap-0.5 rounded-lg border border-(--c2c-border) bg-(--c2c-surface-raised) p-0.5">
+                        <Link
+                          to={`/admin/practice/${question.id}`}
+                          className="c2c-icon-button c2c-tooltip h-9! w-9! border-0!"
+                          aria-label={`Open code workspace for ${question.title}`}
+                          data-tooltip="Open code workspace"
+                        >
+                          <Code2 className="h-4 w-4" />
+                        </Link>
                         <button
                           type="button"
                           onClick={() => {
                             setEditingQuestion(question);
                             setIsFormOpen(true);
                           }}
-                          className="c2c-icon-button c2c-tooltip"
+                          className="c2c-icon-button c2c-tooltip h-9! w-9! border-0!"
                           aria-label={`Edit ${question.title}`}
                           data-tooltip="Edit question"
                         >
@@ -503,19 +566,19 @@ export const PracticeExplorer: React.FC<PracticeExplorerProps> = ({ role }) => {
                         <button
                           type="button"
                           onClick={() => setQuestionToDelete(question)}
-                          className="c2c-icon-button c2c-tooltip hover:border-rose-500/40 hover:text-rose-400"
+                          className="c2c-icon-button c2c-tooltip h-9! w-9! border-0! hover:text-rose-400"
                           aria-label={`Delete ${question.title}`}
                           data-tooltip="Delete question"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
-                      </>
+                      </div>
                     ) : (
                       <>
                         <button
                           type="button"
                           onClick={() => toggleQuestionState(question.id, 'isBookmarked')}
-                          className={`c2c-icon-button c2c-tooltip ${
+                          className={`c2c-icon-button c2c-tooltip h-9! w-9! ${
                             question.isBookmarked ? 'border-amber-500/30 bg-amber-500/10 text-amber-400' : ''
                           }`}
                           aria-label={question.isBookmarked ? `Remove ${question.title} bookmark` : `Bookmark ${question.title}`}
@@ -525,7 +588,7 @@ export const PracticeExplorer: React.FC<PracticeExplorerProps> = ({ role }) => {
                           <Bookmark className={`h-4 w-4 ${question.isBookmarked ? 'fill-current' : ''}`} />
                         </button>
                         <Link
-                          to={`/problems/${question.slug}`}
+                          to={`/practice/${question.id}`}
                           className="c2c-icon-button c2c-tooltip"
                           aria-label={`Open ${question.title}`}
                           data-tooltip="Open question"
@@ -550,6 +613,11 @@ export const PracticeExplorer: React.FC<PracticeExplorerProps> = ({ role }) => {
 
       {isAdmin && (
         <>
+          <AdminQuestionWorkspace
+            isOpen={isComposerOpen}
+            onClose={() => setIsComposerOpen(false)}
+            onCreated={() => void fetchQuestions(currentSearchPayload())}
+          />
           <PracticeQuestionForm
             isOpen={isFormOpen}
             question={editingQuestion}

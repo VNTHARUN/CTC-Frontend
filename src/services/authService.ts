@@ -67,13 +67,7 @@ export interface LoginResponseData {
   email: string;
 }
 
-/**
- * signUp API returns user info but no token — the user must log in after signup.
- * POST /api/v1/signUp
- * Response: { statusCode, message, data: { firstName, lastName, username, email, password, role }, errors, timestamp }
- *
- * NOTE: The backend returns password in the response. The frontend should NOT persist, log, or display this.
- */
+
 export interface SignUpResponseData {
   firstName: string;
   lastName: string;
@@ -91,7 +85,8 @@ export interface SignUpResponseData {
 export interface RefreshTokenResponseData {
   token?: string;
   accessToken?: string;
-  refreshToken: string;
+  jwtToken?: string;
+  refreshToken?: string;
   role: string;
   id: number;
   firstName: string;
@@ -170,14 +165,13 @@ export const authService = {
   /**
    * POST /api/v1/auth/login
    * Payload: { email, password }
-   * On success: JWT → sessionStorage; refresh token copy → sessionStorage for
-   * logout/refresh POST bodies. The backend also sets the refresh token as an
-   * HttpOnly cookie (sent automatically via withCredentials).
+   * On success: JWT → sessionStorage; refreshToken from the JSON body →
+   * sessionStorage so /auth/refresh and /auth/logout can send { refreshToken }.
+   * The backend may also set a cookie (sent via withCredentials).
    */
   async login(payload: LoginPayload): Promise<ApiResponse<AuthResponseData>> {
     if (USE_MOCK) {
       const token = 'mock_jwt_token_header_secret_12345';
-      const mockRefreshToken = 'mock_refresh_token_12345';
       const user: AuthUser = {
         id: 1,
         firstName: 'Test',
@@ -186,8 +180,7 @@ export const authService = {
         role: 'USER',
       };
       tokenStorage.setToken(token);
-      tokenStorage.setRefreshToken(mockRefreshToken);
-      cookieStorage.clearRefreshToken();
+      tokenStorage.setRefreshToken('mock_refresh_token');
       authUserStorage.setUser(user);
       return mockDelay(
         {
@@ -211,7 +204,9 @@ export const authService = {
       throw envelope;
     }
 
-    const { token, refreshToken, id, firstName, lastName, email, role } = envelope.data;
+    const data = envelope.data;
+    const { token, id, firstName, lastName, email, role } = data;
+    const refreshToken = data.refreshToken || (data as LoginResponseData & { RefreshToken?: string }).RefreshToken;
     const user: AuthUser = {
       id,
       firstName,
@@ -221,9 +216,9 @@ export const authService = {
     };
 
     tokenStorage.setToken(token);
-    tokenStorage.setRefreshToken(refreshToken);
-    // Drop any leftover JS-writable cookie from the previous implementation.
-    cookieStorage.clearRefreshToken();
+    if (refreshToken) {
+      tokenStorage.setRefreshToken(refreshToken);
+    }
     authUserStorage.setUser(user);
 
     return {
@@ -238,7 +233,7 @@ export const authService = {
 
   /**
    * POST /api/v1/signUp
-   * Payload: { firstName, lastName, userName, email, password }
+   * Payload: { firstName, lastName, labelUserName, email, password }
    * On success: returns user data. The user is NOT auto-logged in — they must login after signup.
    */
   async register(payload: RegisterPayload): Promise<{ message: string; data: SignUpResponseData }> {
@@ -256,10 +251,16 @@ export const authService = {
       };
     }
 
-    // Let HTTP errors propagate — the thunk catches them via rejectWithValue.
-    const envelope = await apiClient.post<any, BackendEnvelope<SignUpResponseData>>(
+    clearClientAuthState();
+    const envelope = await postPublicJson<BackendEnvelope<SignUpResponseData>>(
       API_ENDPOINTS.AUTH.REGISTER,
-      payload
+      {
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        labelUserName: payload.labelUserName.trim(),
+        email: payload.email,
+        password: payload.password,
+      }
     );
 
     // HTTP 200 but logical failure (statusCode: 500 in body).
@@ -354,15 +355,15 @@ export const authService = {
    * the UI. Local storage is still cleared if the API call fails.
    */
   async logout(): Promise<{ message: string }> {
-    const refreshToken = resolveRefreshToken(tokenStorage.getRefreshToken());
     let message = 'Logout Successful';
 
-    if (!USE_MOCK && refreshToken) {
+    if (!USE_MOCK) {
       try {
-        const envelope = await apiClient.post<
-          { refreshToken: string },
-          BackendEnvelope<string>
-        >(API_ENDPOINTS.AUTH.LOGOUT, { refreshToken });
+        const refreshToken = resolveRefreshToken(tokenStorage.getRefreshToken());
+        const envelope = await apiClient.post<RefreshTokenPayload, BackendEnvelope<string>>(
+          API_ENDPOINTS.AUTH.LOGOUT,
+          refreshToken ? { refreshToken } : undefined
+        );
         if (typeof envelope?.message === 'string' && envelope.message.trim()) {
           message = envelope.message;
         }
@@ -382,41 +383,18 @@ export const authService = {
    * POST /api/v1/auth/refresh
    * Body: { refreshToken }
    * Stores JWT + identity and rotates the refresh token.
+   *
+   * Concurrent callers share one in-flight request. The backend invalidates
+   * the old refresh token on success, so a second parallel POST with the same
+   * value comes back as "Refresh token invalid or expired".
    */
-  async refreshSession(
-    explicitToken?: string,
-    options?: { allowEmptyBody?: boolean }
-  ): Promise<AuthSession> {
-    const refreshToken =
-      resolveRefreshToken(explicitToken || tokenStorage.getRefreshToken()) ?? '';
-    if (!refreshToken && !options?.allowEmptyBody) {
-      throw { statusCode: 401, message: 'No refresh token available', data: null, errors: null };
-    }
+  async refreshSession(): Promise<AuthSession> {
+    if (refreshInFlight) return refreshInFlight;
 
-    if (USE_MOCK) {
-      const user: AuthUser = {
-        id: 1,
-        firstName: 'Test',
-        lastName: 'User',
-        email: 'test@example.com',
-        role: 'USER',
-      };
-      tokenStorage.setToken('mock_jwt_token_header_secret_12345');
-      tokenStorage.setRefreshToken(refreshToken);
-      authUserStorage.setUser(user);
-      return { token: 'mock_jwt_token_header_secret_12345', user, message: 'Token Refreshed Successfully' };
-    }
-
-    const envelope = await apiClient.post<
-      { refreshToken: string },
-      BackendEnvelope<RefreshTokenResponseData>
-    >(API_ENDPOINTS.AUTH.REFRESH_TOKEN, { refreshToken });
-
-    if (envelope.statusCode !== 200 || !envelope.data) {
-      throw envelope;
-    }
-
-    return persistRefreshedSession(envelope);
+    refreshInFlight = performRefreshSession().finally(() => {
+      refreshInFlight = null;
+    });
+    return refreshInFlight;
   },
 
   /**
@@ -433,14 +411,58 @@ export const authService = {
   },
 };
 
+let refreshInFlight: Promise<AuthSession> | null = null;
+
+async function performRefreshSession(): Promise<AuthSession> {
+  if (USE_MOCK) {
+    const user: AuthUser = {
+      id: 1,
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@example.com',
+      role: 'USER',
+    };
+    tokenStorage.setToken('mock_jwt_token_header_secret_12345');
+    tokenStorage.setRefreshToken('mock_refresh_token');
+    authUserStorage.setUser(user);
+    return { token: 'mock_jwt_token_header_secret_12345', user, message: 'Token Refreshed Successfully' };
+  }
+
+  const refreshToken = resolveRefreshToken(tokenStorage.getRefreshToken());
+  if (!refreshToken) {
+    throw {
+      statusCode: 401,
+      message: 'Refresh token is missing. Please log in again.',
+      data: null,
+      errors: ['Refresh token is missing. Please log in again.'],
+    };
+  }
+
+  tokenStorage.setRefreshToken(refreshToken);
+
+  const envelope = await apiClient.post<RefreshTokenPayload, BackendEnvelope<RefreshTokenResponseData>>(
+    API_ENDPOINTS.AUTH.REFRESH_TOKEN,
+    { refreshToken }
+  );
+
+  if (envelope.statusCode !== 200 || !envelope.data) {
+    throw envelope;
+  }
+
+  return persistRefreshedSession(envelope);
+}
+
 function persistRefreshedSession(
   envelope: BackendEnvelope<RefreshTokenResponseData>
 ): AuthSession {
   const data = envelope.data!;
-  const token = data.token || data.accessToken;
+  const token = data.jwtToken || data.accessToken || data.token;
   if (!token) {
     throw envelope;
   }
+
+  const rotatedRefresh =
+    data.refreshToken || (data as RefreshTokenResponseData & { RefreshToken?: string }).RefreshToken;
 
   const user: AuthUser = {
     id: data.id,
@@ -451,24 +473,47 @@ function persistRefreshedSession(
   };
 
   tokenStorage.setToken(token);
-  if (data.refreshToken) {
-    tokenStorage.setRefreshToken(data.refreshToken);
+  if (rotatedRefresh) {
+    tokenStorage.setRefreshToken(rotatedRefresh);
   }
   authUserStorage.setUser(user);
 
   return { token, user, message: envelope.message };
 }
 
-function clearClientAuthState(): void {
-  tokenStorage.clearToken();
-  tokenStorage.clearRefreshToken();
-  cookieStorage.clearRefreshToken();
-  authUserStorage.clearUser();
-  delete apiClient.defaults.headers.common['Authorization'];
+async function postPublicJson<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(`${apiClient.defaults.baseURL}${path}`, {
+    method: 'POST',
+    credentials: 'omit',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  const envelope = (await response.json().catch(() => null)) as T | null;
+  if (!response.ok) {
+    throw envelope || {
+      statusCode: response.status,
+      message: `Request failed (${response.status})`,
+      data: null,
+      errors: null,
+    };
+  }
+  if (!envelope) {
+    throw {
+      statusCode: response.status,
+      message: 'The server returned an empty signup response.',
+      data: null,
+      errors: null,
+    };
+  }
+  return envelope;
 }
 
-export const cookieStorage = {
-  clearRefreshToken(): void {
-    clearReadableRefreshCookies();
-  },
-};
+export function clearClientAuthState(): void {
+  tokenStorage.clearAll();
+  authUserStorage.clearUser();
+  clearReadableRefreshCookies();
+  delete apiClient.defaults.headers.common['Authorization'];
+}

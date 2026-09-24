@@ -7,10 +7,17 @@ import { Login } from '../../auth/pages/Login';
 import { NeetCodeNavbar } from '../../../shared/components/ui/NeetCodeNavbar';
 import { Footer } from '../../../shared/components/ui/Footer';
 import { toastAuthFeedback, toAuthFeedback } from '../../auth/utils/authToasts';
+import { resetIdleDocumentScrollLock } from '../../../shared/hooks/useScrollLock';
 
 export const Landing: React.FC = () => {
   const dispatch = useAppDispatch();
   const { isAuthModalOpen, user } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (!isAuthModalOpen) {
+      resetIdleDocumentScrollLock();
+    }
+  }, [isAuthModalOpen]);
 
   const handleLogout = async () => {
     const res = await dispatch(logoutUser());
