@@ -15,10 +15,10 @@ export const Pagination: React.FC<PaginationProps> = ({
   if (totalPages <= 1) return null;
 
   return (
-    <nav aria-label="Pagination" className="c2c-card flex items-center justify-between px-4 py-3 text-xs text-[var(--c2c-text-muted)]">
+    <nav aria-label="Pagination" className="c2c-card flex items-center justify-between px-4 py-3 text-xs text-(--c2c-text-muted)">
       <div>
-        Page <span className="font-semibold text-gray-200">{currentPage}</span> of{' '}
-        <span className="font-semibold text-gray-200">{totalPages}</span>
+        Page <span className="font-semibold text-(--c2c-text)">{currentPage}</span> of{' '}
+        <span className="font-semibold text-(--c2c-text)">{totalPages}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <button

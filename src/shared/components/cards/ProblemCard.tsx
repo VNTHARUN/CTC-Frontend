@@ -40,7 +40,7 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({
   return (
     <motion.div
       whileHover={{ y: -1 }}
-      className="group flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-[#202225] hover:bg-[#2f3136] border border-white/10 hover:border-white/20 rounded-xl transition-all duration-150 gap-3"
+      className="group flex flex-col justify-between gap-3 rounded-xl border border-(--c2c-border) bg-(--c2c-surface) p-3.5 transition-all duration-150 hover:border-(--c2c-border-strong) hover:bg-(--c2c-surface-raised) sm:flex-row sm:items-center"
     >
       <div className="flex items-center gap-3.5 min-w-0">
         <button
@@ -59,18 +59,18 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({
           <div className="flex items-center gap-2">
             <Link
               to={`/problems/${problem.slug}`}
-              className="text-sm font-semibold text-gray-200 hover:text-[#627eff] transition-colors truncate"
+              className="truncate text-sm font-semibold text-(--c2c-text) transition-colors hover:text-(--c2c-primary)"
             >
               {problem.title}
             </Link>
             <i className="fa-solid fa-arrow-up-right-from-square text-[10px] text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity"></i>
           </div>
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-            <span className="text-[11px] font-mono text-gray-400">{problem.topic}</span>
+            <span className="text-[11px] font-mono text-(--c2c-text-muted)">{problem.topic}</span>
             {problem.acceptanceRate && (
               <>
-                <span className="text-gray-700">•</span>
-                <span className="text-[11px] text-gray-500 font-mono">Acc: {problem.acceptanceRate}</span>
+                <span className="text-(--c2c-text-subtle)">•</span>
+                <span className="text-[11px] font-mono text-(--c2c-text-subtle)">Acc: {problem.acceptanceRate}</span>
               </>
             )}
           </div>
@@ -92,7 +92,7 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({
             {problem.companies.slice(0, 2).map((comp) => (
               <span
                 key={comp}
-                className="text-[10px] font-mono bg-[#121113] text-gray-400 border border-white/10 px-2 py-0.5 rounded"
+                className="rounded border border-(--c2c-border) bg-(--c2c-surface-raised) px-2 py-0.5 text-[10px] font-mono text-(--c2c-text-muted)"
               >
                 {comp}
               </span>
@@ -109,7 +109,7 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({
           className={`p-1.5 rounded-lg border transition-colors ${
             problem.isBookmarked
               ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-              : 'border-white/10 text-gray-500 hover:text-gray-300 hover:bg-[#121113]'
+              : 'border-(--c2c-border) text-(--c2c-text-subtle) hover:bg-(--c2c-surface-raised) hover:text-(--c2c-text)'
           }`}
           title="Save to bookmarks"
         >

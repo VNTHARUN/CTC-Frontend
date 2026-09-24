@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../app/hooks';
+import { shouldSkipPostLoginReturn } from '../../features/auth/utils/authHome';
 
 export const ProtectedRoute: React.FC = () => {
   const { initialized, isAuthenticated, loading } = useAppSelector((state) => state.auth);
@@ -19,7 +20,13 @@ export const ProtectedRoute: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return (
+      <Navigate
+        to="/login"
+        state={shouldSkipPostLoginReturn() ? undefined : { from: location }}
+        replace
+      />
+    );
   }
 
   return <Outlet />;

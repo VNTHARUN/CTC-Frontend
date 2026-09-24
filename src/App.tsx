@@ -9,9 +9,14 @@ import { useAppDispatch } from './app/hooks';
 import { initializeAuth } from './features/auth/redux/authSlice';
 import { consumeOAuthPending } from './features/auth/utils/googleOAuth';
 import { toAuthFeedback, toastAuthFeedback } from './features/auth/utils/authToasts';
+import { resetIdleDocumentScrollLock } from './shared/hooks/useScrollLock';
 
 const AppInner: React.FC = () => {
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    resetIdleDocumentScrollLock();
+  }, []);
 
   useEffect(() => {
     void (async () => {

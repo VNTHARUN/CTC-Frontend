@@ -1,21 +1,29 @@
 /**
  * Resolves the refresh token used in POST /auth/refresh and /auth/logout.
  *
- * After Google OAuth the backend redirects to /practice and sets the token in
- * an HTTP cookie (and sometimes a query param). Login already stores a
- * sessionStorage copy. HttpOnly cookies cannot be read here — those still
- * travel on the request via withCredentials, but the API body needs a value
- * we can actually send.
+ * Login/refresh persist a sessionStorage copy. Google OAuth may also put the
+ * token in a readable cookie or a one-time query param. HttpOnly cookies
+ * cannot be read here — they still travel via withCredentials, but the API
+ * body requires a value we can send.
  */
+
+import { tokenStorage } from '../../../core/security/tokenStorage';
 
 const QUERY_KEYS = ['refreshToken', 'refresh_token'] as const;
 
 const COOKIE_NAMES = [
   import.meta.env.VITE_REFRESH_TOKEN_COOKIE,
+  import.meta.env.VITE_JWT_COOKIE,
   'refreshToken',
   'refresh_token',
   'RefreshToken',
   'c2c_refresh_token',
+  'JwtToken',
+  'jwtToken',
+  'jwt_token',
+  'accessToken',
+  'AccessToken',
+  'token',
 ].filter((name): name is string => Boolean(name));
 
 function parseCookies(): Record<string, string> {
@@ -65,20 +73,43 @@ function consumeRefreshTokenFromQuery(): string | null {
 }
 
 export function resolveRefreshToken(stored?: string | null): string | null {
-  const fromStore = stored?.trim();
+  const fromStore = stored?.trim() || tokenStorage.getRefreshToken()?.trim();
   if (fromStore) return fromStore;
 
   const fromQuery = consumeRefreshTokenFromQuery();
-  if (fromQuery) return fromQuery;
+  if (fromQuery) {
+    tokenStorage.setRefreshToken(fromQuery);
+    return fromQuery;
+  }
 
-  return readRefreshTokenFromCookie();
+  const fromCookie = readRefreshTokenFromCookie();
+  if (fromCookie) {
+    tokenStorage.setRefreshToken(fromCookie);
+    return fromCookie;
+  }
+
+  return null;
+}
+
+function expireCookie(name: string): void {
+  const expires = 'Thu, 01 Jan 1970 00:00:00 GMT';
+  const paths = ['/', '/api', '/api/v1'];
+  const host = typeof window !== 'undefined' ? window.location.hostname : '';
+  const domains = host ? ['', host, `.${host}`] : [''];
+  for (const path of paths) {
+    for (const domain of domains) {
+      const domainPart = domain ? `domain=${domain}; ` : '';
+      document.cookie = `${name}=; expires=${expires}; path=${path}; ${domainPart}Max-Age=0; SameSite=Lax`;
+      document.cookie = `${name}=; expires=${expires}; path=${path}; ${domainPart}Max-Age=0; SameSite=None; Secure`;
+    }
+  }
 }
 
 export function clearReadableRefreshCookies(): void {
   if (typeof document === 'undefined') return;
-  const expired = 'expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax';
-  const names = new Set([...COOKIE_NAMES, ...Object.keys(parseCookies()).filter((n) => /refresh/i.test(n))]);
-  names.forEach((name) => {
-    document.cookie = `${name}=; ${expired}`;
-  });
+  const names = new Set([
+    ...COOKIE_NAMES,
+    ...Object.keys(parseCookies()).filter((name) => /refresh|jwt|token/i.test(name)),
+  ]);
+  names.forEach((name) => expireCookie(name));
 }

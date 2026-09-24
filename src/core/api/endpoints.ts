@@ -21,9 +21,8 @@ export const API_ENDPOINTS = {
     CATEGORIES: '/problems/categories',
   },
   COMPANIES: {
-    LIST: '/companies',
-    DETAILS: (id: string) => `/companies/${id}`,
-    PROBLEMS: (id: string) => `/companies/${id}/problems`,
+    LIST: '/company',
+    DETAILS: (id: string) => `/company/${id}`,
   },
   APTITUDE: {
     LIST: '/prep/aptitude',
@@ -58,5 +57,26 @@ export const API_ENDPOINTS = {
   SETTINGS: {
     GET: '/settings',
     UPDATE: '/settings/update',
+  },
+  REFERENCE_LIBRARY: {
+    BY_GROUP: (refGroupCode: string) => `/referenceLibrary/refGroupCode/${refGroupCode}`,
+  },
+  CODE_EXECUTION: {
+    LANGUAGES: '/referenceLibrary/refGroupCode/LANG',
+    USER_RUN: '/runCode',
+    USER_SUBMIT: '/submitCode',
+    ADMIN_RUN: '/admin/testCode',
+    ADMIN_SUBMIT: '/admin/submitCode',
+  },
+  PRACTICE_COMPANY: {
+    LIST: '/company',
+    CREATE: '/company',
+    DETAILS: (id: string | number) => `/company/${id}`,
+  },
+  QUESTIONS: {
+    SEARCH: '/questions',
+    CREATE: '/question',
+    DETAILS: (questionId: number | string) => `/question/${questionId}`,
+    TEST_CASES: (questionId: number | string) => `/question/${questionId}/testCases`,
   },
 } as const;

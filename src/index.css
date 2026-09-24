@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant light (&:where(html.light, html.light *));
+
 :root {
   --font-sans: "Inter", "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-heading: "Outfit", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -69,6 +71,29 @@ body {
     radial-gradient(at 0% 0%, rgba(98, 126, 255, 0.05) 0px, transparent 50%),
     radial-gradient(at 100% 0%, rgba(163, 230, 53, 0.03) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(98, 126, 255, 0.03) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+.c2c-app-shell {
+  min-height: 100%;
+  background-color: var(--c2c-bg);
+  background-image:
+    radial-gradient(circle at 5% 0%, rgba(163, 230, 53, 0.08), transparent 30rem),
+    radial-gradient(circle at 96% 18%, rgba(56, 189, 248, 0.06), transparent 34rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.015), transparent 42%, rgba(163, 230, 53, 0.025));
+  background-repeat: no-repeat;
+  background-size: auto, auto, 100% 100%;
+  background-attachment: fixed;
+}
+
+html.light .c2c-app-shell {
+  background-color: #d5ddd4;
+  background-image:
+    radial-gradient(circle at 8% 0%, rgba(63, 98, 18, 0.12), transparent 26rem),
+    radial-gradient(circle at 94% 8%, rgba(14, 116, 144, 0.08), transparent 28rem),
+    linear-gradient(160deg, #d0d9cf 0%, #dde3d8 42%, #d5ddd6 100%);
+  background-repeat: no-repeat;
+  background-size: auto, auto, 100% 100%;
   background-attachment: fixed;
 }
 
@@ -548,8 +573,8 @@ html.light {
 
 html.light body,
 html.light #root {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
+  background-color: var(--c2c-bg) !important;
+  color: var(--c2c-text) !important;
 }
 
 /* 1. MAIN CONTAINERS & CARDS OVERRIDES */
@@ -608,38 +633,45 @@ html.light .text-white,
 html.light .text-gray-100,
 html.light .text-gray-200,
 html.light .text-gray-300 {
-  color: #0f172a !important;
+  color: var(--c2c-text) !important;
 }
 
 html.light .text-gray-400,
-html.light .text-gray-500 {
-  color: #475569 !important;
+html.light .text-gray-500,
+html.light .text-\[\#98A2B3\],
+html.light .text-\[\#9ca3af\] {
+  color: var(--c2c-text-muted) !important;
 }
 
-/* 7. LIME BRAND TEXT CONTRAST IN LIGHT MODE */
+/* 7. Accent text must stay readable on sage — neon lime fails contrast */
 html.light .text-\[\#A3E635\] {
-  color: #A3E635 !important;
+  color: var(--c2c-primary) !important;
 }
 
-/* 8. HEADER & NAVIGATION OVERRIDES */
-html.light header {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
+/* 8. SITE NAV ONLY — do not paint every <header> white (page titles/cards inherit this otherwise) */
+html.light header.sticky.top-0 {
+  background-color: color-mix(in srgb, var(--c2c-surface) 92%, transparent) !important;
+  border-color: var(--c2c-border) !important;
+  box-shadow: var(--c2c-shadow-sm) !important;
 }
 
-html.light nav a:hover {
-  background-color: #f1f5f9 !important;
-  color: #0f172a !important;
+html.light .c2c-page-header {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+html.light footer a:hover {
+  color: var(--c2c-text) !important;
 }
 
 /* 9. FORM INPUTS & SELECTS */
 html.light input,
 html.light select,
 html.light textarea {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #cbd5e1 !important;
+  background-color: var(--c2c-surface-raised) !important;
+  color: var(--c2c-text) !important;
+  border-color: var(--c2c-border) !important;
 }
 
 html.light input::placeholder {
@@ -662,8 +694,8 @@ html.light .bg-\[\#A3E635\] {
 }
 
 html.light .bg-\[\#A3E635\]:hover {
-  background-color: #A3E635 !important;
-  color: #ffffff !important;
+  background-color: #84cc16 !important;
+  color: #111827 !important;
 }
 
 /* 12. SCROLLBARS IN LIGHT MODE */
@@ -696,8 +728,8 @@ html.light [class*="bg-clip-text"] {
 html.light .text-transparent .text-\[\#A3E635\],
 html.light [class*="bg-clip-text"] .text-\[\#A3E635\],
 html.light .text-\[\#A3E635\] {
-  color: #70B615 !important;
-  -webkit-text-fill-color: #70B615 !important;
+  color: var(--c2c-primary) !important;
+  -webkit-text-fill-color: var(--c2c-primary) !important;
 }
 
 /* 11. BUTTONS & VIOLET HIGHLIGHTS IN LIGHT MODE */
@@ -741,12 +773,11 @@ html.light .hero-campus-placement-text .text-\[\#A3E635\] {
   -webkit-text-fill-color: #000000 !important;
 }
 
-/* STRICT BRAND LIME #A3E635 ONLY IN LIGHT MODE */
 html.light .text-\[\#A3E635\],
 html.light span.text-\[\#A3E635\],
 html.light .hero-font .text-\[\#A3E635\] {
-  color: #A3E635 !important;
-  -webkit-text-fill-color: #A3E635 !important;
+  color: var(--c2c-primary) !important;
+  -webkit-text-fill-color: var(--c2c-primary) !important;
 }
 
 html.light .bg-\[\#A3E635\] {
@@ -1024,6 +1055,16 @@ html.light .glass-effect {
   animation: shimmer 1.5s infinite;
 }
 
+html.light .skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--c2c-surface-raised) 25%,
+    var(--c2c-surface-hover) 50%,
+    var(--c2c-surface-raised) 75%
+  );
+  border: 1px solid var(--c2c-border);
+}
+
 /* Tooltip Styles */
 .tooltip {
   position: relative;
@@ -1196,28 +1237,116 @@ html.light .glass-effect {
   --c2c-radius-lg: 1rem;
   --c2c-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
   --c2c-shadow-md: 0 12px 32px rgba(0, 0, 0, 0.24);
-  --c2c-container: 90rem;
+  --c2c-container: 100%;
   --c2c-gutter: 1rem;
 }
 
 html.light {
-  --c2c-bg: #f7f9f4;
-  --c2c-surface: #ffffff;
-  --c2c-surface-raised: #f1f5ec;
-  --c2c-surface-hover: #eaf0e3;
-  --c2c-text: #17200f;
-  --c2c-text-muted: #55604d;
-  --c2c-text-subtle: #6b7465;
-  --c2c-border: rgba(24, 32, 16, 0.12);
-  --c2c-border-strong: rgba(24, 32, 16, 0.22);
-  --c2c-primary: #65a30d;
-  --c2c-primary-hover: #4d7c0f;
-  --c2c-primary-active: #3f6212;
+  --c2c-bg: #d5ddd4;
+  --c2c-surface: #f4f7f2;
+  --c2c-surface-raised: #e7eee3;
+  --c2c-surface-hover: #dce6d6;
+  --c2c-text: #111827;
+  --c2c-text-muted: #334155;
+  --c2c-text-subtle: #475569;
+  --c2c-border: rgba(15, 23, 42, 0.12);
+  --c2c-border-strong: rgba(15, 23, 42, 0.22);
+  --c2c-primary: #3f6212;
+  --c2c-primary-hover: #365314;
+  --c2c-primary-active: #1a2e05;
   --c2c-primary-foreground: #ffffff;
   --c2c-success: #047857;
-  --c2c-focus: #4d7c0f;
-  --c2c-shadow-sm: 0 1px 2px rgba(30, 41, 20, 0.08);
-  --c2c-shadow-md: 0 12px 32px rgba(30, 41, 20, 0.12);
+  --c2c-focus: #3f6212;
+  --c2c-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 20px rgba(15, 23, 42, 0.06);
+  --c2c-shadow-md: 0 16px 36px rgba(15, 23, 42, 0.12);
+}
+
+html.light body {
+  background-color: #d5ddd4;
+  background-image:
+    radial-gradient(circle at 8% 0%, rgba(63, 98, 18, 0.12), transparent 26rem),
+    radial-gradient(circle at 94% 8%, rgba(14, 116, 144, 0.08), transparent 28rem),
+    linear-gradient(160deg, #d0d9cf 0%, #dde3d8 42%, #d5ddd6 100%);
+  background-repeat: no-repeat;
+  background-size: auto, auto, 100% 100%;
+}
+
+.company-logo-well {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 55%),
+    var(--c2c-surface-raised);
+}
+
+html.light .company-logo-well {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 60%),
+    #d4e0ce;
+}
+
+.auth-overlay {
+  isolation: isolate;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  background: rgba(9, 10, 12, 0.72);
+  backdrop-filter: blur(18px) saturate(115%);
+}
+
+.auth-overlay::before,
+.auth-overlay::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: '';
+  pointer-events: none;
+}
+
+.auth-overlay::before {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(163, 230, 53, 0.12), transparent 26rem),
+    radial-gradient(circle at 82% 82%, rgba(56, 189, 248, 0.1), transparent 28rem);
+}
+
+.auth-overlay-light {
+  background: rgba(220, 229, 218, 0.78);
+  backdrop-filter: blur(20px) saturate(110%);
+}
+
+.auth-overlay-light::before {
+  background:
+    radial-gradient(circle at 12% 16%, rgba(101, 163, 13, 0.18), transparent 24rem),
+    radial-gradient(circle at 88% 84%, rgba(45, 119, 136, 0.13), transparent 26rem);
+}
+
+.auth-card {
+  border: 1px solid var(--c2c-border-strong);
+  border-radius: 1.5rem;
+  box-shadow: var(--c2c-shadow-md), 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.auth-card-dark {
+  background: linear-gradient(145deg, #15191a 0%, #1d2520 52%, #121617 100%);
+}
+
+.auth-card-light {
+  background: linear-gradient(145deg, #f8fbf6 0%, #e9f1e5 54%, #f4f8f1 100%);
+  border-color: rgba(71, 102, 67, 0.24);
+  box-shadow: 0 28px 70px rgba(44, 67, 43, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+
+.auth-card-wash {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(135deg, transparent 0 42%, rgba(163, 230, 53, 0.06) 62%, transparent 100%),
+    radial-gradient(circle at 86% 8%, rgba(56, 189, 248, 0.08), transparent 15rem);
+  pointer-events: none;
+}
+
+html.light .auth-card-wash {
+  background:
+    linear-gradient(135deg, transparent 0 42%, rgba(101, 163, 13, 0.08) 62%, transparent 100%),
+    radial-gradient(circle at 86% 8%, rgba(45, 119, 136, 0.09), transparent 15rem);
 }
 
 @media (min-width: 640px) {
@@ -1234,8 +1363,8 @@ html.light {
 
 .c2c-container {
   width: 100%;
-  max-width: var(--c2c-container);
-  margin-inline: auto;
+  max-width: none;
+  margin-inline: 0;
   padding-inline: var(--c2c-gutter);
 }
 
@@ -1245,6 +1374,7 @@ html.light {
 }
 
 .c2c-page-header {
+  width: 100%;
   max-width: 48rem;
   margin-inline: auto;
   text-align: center;
@@ -1255,6 +1385,14 @@ html.light {
   font: 700 0.75rem/1 var(--font-mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+html.light .c2c-title,
+html.light .c2c-lead,
+html.light h1,
+html.light h2,
+html.light h3 {
+  color: var(--c2c-text);
 }
 
 .c2c-title {

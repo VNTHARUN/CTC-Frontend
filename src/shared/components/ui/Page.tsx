@@ -50,9 +50,9 @@ export const StatCard: React.FC<StatCardProps> = ({ label, value, icon, detail }
       </span>
     )}
     <div className="min-w-0">
-      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{label}</p>
-      <p className="mt-1 text-xl font-bold text-white light:text-slate-900">{value}</p>
-      {detail && <p className="mt-0.5 truncate text-xs text-gray-400 light:text-slate-600">{detail}</p>}
+      <p className="text-xs font-semibold uppercase tracking-wider text-(--c2c-text-subtle)">{label}</p>
+      <p className="mt-1 text-xl font-bold text-(--c2c-text)">{value}</p>
+      {detail && <p className="mt-0.5 truncate text-xs text-(--c2c-text-muted)">{detail}</p>}
     </div>
   </div>
 );
@@ -64,8 +64,8 @@ export const SectionHeader: React.FC<{
 }> = ({ title, description, action }) => (
   <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
     <div>
-      <h2 className="text-2xl font-bold tracking-tight text-[var(--c2c-text)]">{title}</h2>
-      {description && <p className="mt-1 text-sm text-[var(--c2c-text-muted)]">{description}</p>}
+      <h2 className="text-2xl font-bold tracking-tight text-(--c2c-text)">{title}</h2>
+      {description && <p className="mt-1 text-sm text-(--c2c-text-muted)">{description}</p>}
     </div>
     {action}
   </div>
@@ -75,7 +75,7 @@ export const ProgressBar: React.FC<{ value: number; label: string }> = ({ value,
   const safeValue = Math.min(100, Math.max(0, value));
   return (
     <div>
-      <div className="mb-2 flex justify-between text-xs text-[var(--c2c-text-muted)]">
+      <div className="mb-2 flex justify-between text-xs text-(--c2c-text-muted)">
         <span>{label}</span>
         <span className="font-mono">{safeValue}%</span>
       </div>
@@ -85,16 +85,16 @@ export const ProgressBar: React.FC<{ value: number; label: string }> = ({ value,
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={safeValue}
-        className="h-2 overflow-hidden rounded-full bg-[var(--c2c-surface-raised)]"
+        className="h-2 overflow-hidden rounded-full bg-(--c2c-surface-raised)"
       >
-        <div className="h-full rounded-full bg-[var(--c2c-success)] transition-[width] duration-300" style={{ width: `${safeValue}%` }} />
+        <div className="h-full rounded-full bg-(--c2c-success) transition-[width] duration-300" style={{ width: `${safeValue}%` }} />
       </div>
     </div>
   );
 };
 
 export const LoadingState: React.FC<{ label?: string }> = ({ label = 'Loading content' }) => (
-  <div role="status" className="flex min-h-40 flex-col items-center justify-center gap-3 text-[var(--c2c-text-muted)]">
+  <div role="status" className="flex min-h-40 flex-col items-center justify-center gap-3 text-(--c2c-text-muted)">
     <span className="c2c-spinner h-6 w-6" aria-hidden="true" />
     <span className="text-sm font-medium">{label}</span>
   </div>

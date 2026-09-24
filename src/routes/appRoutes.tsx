@@ -15,6 +15,7 @@ const Signup = lazy(() => import('../features/auth/pages/Signup').then((m) => ({
 const ForgotPassword = lazy(() => import('../features/auth/pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
 
 const PracticePage = lazy(() => import('../features/problems/pages/PracticePage').then((m) => ({ default: m.PracticePage })));
+const QuestionCodingWorkspace = lazy(() => import('../features/problems/pages/QuestionCodingWorkspace').then((m) => ({ default: m.QuestionCodingWorkspace })));
 const AdminPracticePage = lazy(() => import('../features/problems/pages/AdminPracticePage').then((m) => ({ default: m.AdminPracticePage })));
 const ProblemList = lazy(() => import('../features/problems/pages/ProblemList').then((m) => ({ default: m.ProblemList })));
 const ProblemDetails = lazy(() => import('../features/problems/pages/ProblemDetails').then((m) => ({ default: m.ProblemDetails })));
@@ -82,10 +83,12 @@ export const router = createBrowserRouter([
         children: [
           { path: '/dashboard', element: <Navigate to="/practice" replace /> },
           { path: '/practice', element: withSuspense(PracticePage) },
+          { path: '/practice/:questionId', element: withSuspense(QuestionCodingWorkspace) },
           {
             element: <AdminRoute />,
             children: [
               { path: '/admin/practice', element: withSuspense(AdminPracticePage) },
+              { path: '/admin/practice/:questionId', element: withSuspense(QuestionCodingWorkspace) },
             ],
           },
           { path: '/problems', element: <Navigate to="/practice" replace /> },

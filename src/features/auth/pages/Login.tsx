@@ -7,13 +7,14 @@ import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { loginUser, registerUser, clearAuthError } from '../redux/authSlice';
 import { useTheme } from '../../../shared/context/ThemeContext';
 import { toAuthFeedback, toastAuthFeedback } from '../utils/authToasts';
-import { homePathForRole } from '../utils/authHome';
+import { postLoginPath } from '../utils/authHome';
 import { startGoogleOAuth } from '../utils/googleOAuth';
 import { authInputClass } from '../utils/authStyles';
 import { AuthField as Field } from '../components/AuthField';
 import { PasswordStrengthMeter } from '../components/PasswordStrengthMeter';
 import { PasswordResetCard } from '../components/PasswordResetCard';
 import { AUTH_OVERLAY_Z_CLASS } from '../../../shared/components/ui/AppToaster';
+import { useScrollLock } from '../../../shared/hooks/useScrollLock';
 
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
@@ -81,6 +82,7 @@ export const Login: React.FC<AuthPageProps> = ({ defaultMode, onCloseModal }) =>
 
   useEffect(() => { if (authModalMode) setMode(authModalMode); }, [authModalMode]);
   useEffect(() => { dispatch(clearAuthError()); }, [mode, dispatch]);
+  useScrollLock(true);
 
   // ── Forms ─────────────────────────────────────────────────────────────────
   const {
@@ -118,12 +120,7 @@ export const Login: React.FC<AuthPageProps> = ({ defaultMode, onCloseModal }) =>
 
   const postAuthNav = (role?: string) => {
     const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
-    const home = homePathForRole(role);
-    if (from && from !== '/login' && from !== '/signup') {
-      navigate(from);
-      return;
-    }
-    navigate(home);
+    navigate(postLoginPath(role, from), { replace: true });
   };
 
   const inputBase = (err: boolean) => authInputClass(theme, err);
@@ -133,7 +130,7 @@ export const Login: React.FC<AuthPageProps> = ({ defaultMode, onCloseModal }) =>
     const res = await dispatch(loginUser(data));
     if (loginUser.fulfilled.match(res)) {
       toastAuthFeedback({ message: res.payload.message, errors: null }, 'success');
-      close();
+      if (onCloseModal) onCloseModal();
       postAuthNav(res.payload.user.role);
     } else {
       toastAuthFeedback(toAuthFeedback(res.payload), 'error');
@@ -162,18 +159,14 @@ export const Login: React.FC<AuthPageProps> = ({ defaultMode, onCloseModal }) =>
   const errorCount = Object.keys(eS).length;
 
   return (
-    <div className={`fixed inset-0 ${AUTH_OVERLAY_Z_CLASS} bg-black/80 dark:bg-black/80 light:bg-gray-900/70 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto font-sans animate-fade-in`}>
-      <div className={`relative w-full max-w-120 border-2 border-white/20 dark:border-white/20 light:border-gray-300 rounded-3xl shadow-[0_50px_120px_rgba(0,0,0,0.95),0_0_80px_rgba(163,230,53,0.1)] dark:shadow-[0_50px_120px_rgba(0,0,0,0.95),0_0_80px_rgba(163,230,53,0.1)] light:shadow-[0_50px_120px_rgba(0,0,0,0.4)] my-auto overflow-hidden transform transition-all duration-500 animate-slide-up ${
-        theme === 'dark' ? 'bg-linear-to-br from-[#111215] via-[#1a1c21] to-[#111215]' : 'bg-linear-to-br from-white via-gray-50 to-white'
-      }`}>
+    <div className={`auth-overlay fixed inset-0 ${AUTH_OVERLAY_Z_CLASS} flex items-center justify-center p-4 overflow-y-auto font-sans animate-fade-in ${theme === 'dark' ? 'auth-overlay-dark' : 'auth-overlay-light'}`}>
+      <div className={`auth-card relative w-full max-w-120 my-auto overflow-hidden transform transition-all duration-500 animate-slide-up ${theme === 'dark' ? 'auth-card-dark' : 'auth-card-light'}`}>
 
         {/* Top accent line with shimmer animation */}
         <div className="h-0.75 w-full bg-linear-to-r from-transparent via-[#A3E635] to-transparent animate-shimmer bg-size-[200%_100%]" />
 
         <div className="p-8 sm:p-10 relative">
-          {/* Floating gradient orbs in background */}
-          <div className="absolute top-10 right-10 w-40 h-40 bg-[#A3E635]/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
-          <div className="absolute bottom-10 left-10 w-48 h-48 bg-[#627eff]/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDelay: '1s' }} />
+          <div className="auth-card-wash pointer-events-none" aria-hidden="true" />
 
           {/* Close Button */}
           <button

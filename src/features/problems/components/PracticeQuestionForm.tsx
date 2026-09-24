@@ -123,7 +123,7 @@ export const PracticeQuestionForm: React.FC<PracticeQuestionFormProps> = ({
       maxWidth="xl"
     >
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-        <div className="rounded-lg border border-[var(--c2c-border)] bg-[var(--c2c-surface-raised)] p-3 text-sm text-[var(--c2c-text-muted)]">
+        <div className="rounded-lg border border-(--c2c-border) bg-(--c2c-surface-raised) p-3 text-sm text-(--c2c-text-muted)">
           Use the existing question fields only. Changes are saved in this browser for preview.
         </div>
 
@@ -186,8 +186,8 @@ export const PracticeQuestionForm: React.FC<PracticeQuestionFormProps> = ({
             aria-invalid={Boolean(errors.description)}
             aria-describedby={errors.description ? 'question-description-error' : undefined}
             rows={4}
-            className={`w-full resize-y rounded-lg border bg-[var(--c2c-surface)] px-3.5 py-3 text-sm text-[var(--c2c-text)] outline-none transition-colors placeholder:text-[var(--c2c-text-subtle)] ${
-              errors.description ? 'border-rose-500/80' : 'border-[var(--c2c-border)] focus:border-[var(--c2c-primary)]'
+            className={`w-full resize-y rounded-lg border bg-(--c2c-surface) px-3.5 py-3 text-sm text-(--c2c-text) outline-none transition-colors placeholder:text-(--c2c-text-subtle) ${
+              errors.description ? 'border-rose-500/80' : 'border-(--c2c-border) focus:border-(--c2c-primary)'
             }`}
             placeholder="Describe the problem statement."
           />
@@ -205,7 +205,7 @@ export const PracticeQuestionForm: React.FC<PracticeQuestionFormProps> = ({
           </div>
         )}
 
-        <div className="flex flex-col-reverse gap-2 border-t border-[var(--c2c-border)] pt-4 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse gap-2 border-t border-(--c2c-border) pt-4 sm:flex-row sm:justify-end">
           <Button type="button" variant="ghost" onClick={onClose} disabled={isSaving}>
             Cancel
           </Button>

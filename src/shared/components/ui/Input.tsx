@@ -15,13 +15,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full flex flex-col gap-1.5 text-left">
         {label && (
-          <label htmlFor={inputId} className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 font-mono">
+          <label htmlFor={inputId} className="text-[11px] font-semibold uppercase tracking-wider text-(--c2c-text-subtle) font-mono">
             {label}
           </label>
         )}
         <div className="relative flex items-center w-full">
           {leftIcon && (
-            <div className="absolute left-3.5 text-gray-500 pointer-events-none flex items-center">
+            <div className="absolute left-3.5 text-(--c2c-text-subtle) pointer-events-none flex items-center">
               {leftIcon}
             </div>
           )}
@@ -30,19 +30,19 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             aria-invalid={Boolean(error)}
             aria-describedby={error || helperText ? `${inputId}-message` : undefined}
-            className={`min-h-11 w-full bg-[var(--c2c-surface)] border ${
-              error ? 'border-rose-500/80' : 'border-[var(--c2c-border)] focus:border-[var(--c2c-primary)]'
-            } text-[var(--c2c-text)] placeholder:text-[var(--c2c-text-subtle)] rounded-lg text-sm px-3.5 py-2.5 transition-all outline-none ${
+            className={`min-h-11 w-full bg-(--c2c-surface) border ${
+              error ? 'border-rose-500/80' : 'border-(--c2c-border) focus:border-(--c2c-primary)'
+            } text-(--c2c-text) placeholder:text-(--c2c-text-subtle) rounded-lg text-sm px-3.5 py-2.5 transition-all outline-none ${
               leftIcon ? 'pl-10' : ''
             } ${rightIcon ? 'pr-10' : ''} ${className}`}
             {...props}
           />
-          {rightIcon && <div className="absolute right-3.5 text-gray-400 flex items-center">{rightIcon}</div>}
+          {rightIcon && <div className="absolute right-3.5 text-(--c2c-text-muted) flex items-center">{rightIcon}</div>}
         </div>
         {error ? (
           <span id={`${inputId}-message`} className="text-xs text-rose-400 font-medium">{error}</span>
         ) : helperText ? (
-          <span id={`${inputId}-message`} className="text-xs text-gray-500">{helperText}</span>
+          <span id={`${inputId}-message`} className="text-xs text-(--c2c-text-subtle)">{helperText}</span>
         ) : null}
       </div>
     );
