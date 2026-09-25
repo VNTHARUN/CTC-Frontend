@@ -21,7 +21,7 @@ import {
 
 const DEFAULT_QUESTION_PAGE: QuestionSearchPayload['pageRequest'] = {
   pageNumber: 0,
-  pageSize: 0,
+  pageSize: 25,
   sortBy: 'id',
   sortDirection: 'ASC',
 };
